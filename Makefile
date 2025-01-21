@@ -20,8 +20,8 @@ clean:
 
 # Cible de compilation des shaders
 shaders:
-	glslc shaders/shader.vert -o shaders/vert.spv
-	glslc shaders/shader.frag -o shaders/frag.spv
+	glslc res/shaders/shader.vert -o res/shaders/vert.spv
+	glslc res/shaders/shader.frag -o res/shaders/frag.spv
 
 # Cible exemple : compilation d'un exemple spécifique
 example:
