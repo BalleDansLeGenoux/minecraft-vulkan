@@ -1,0 +1,28 @@
+/src
+ ├── Core/
+ │    ├── VulkanInstance.h/.cpp
+ │    ├── VulkanDevice.h/.cpp
+ │    ├── VulkanSwapchain.h/.cpp
+ │    ├── VulkanPipeline.h/.cpp
+ │    ├── VulkanRenderer.h/.cpp
+ │
+ ├── Graphics/
+ │    ├── TextureManager.h/.cpp
+ │    ├── ShaderManager.h/.cpp
+ │    ├── PipelineManager.h/.cpp
+ │
+ ├── World/
+ │    ├── Chunk.h/.cpp
+ │    ├── World.h/.cpp
+ │    ├── Block.h/.cpp
+ │    ├── ChunkMesh.h/.cpp
+ │
+ ├── Engine/
+ │    ├── Camera.h/.cpp
+ │    ├── InputManager.h/.cpp
+ │    ├── Physics.h/.cpp
+ │
+ ├── UI/
+ │    ├── UIManager.h/.cpp
+ │
+ ├── Main.cpp
