@@ -1,44 +1,32 @@
-# Variables de compilation et de liens
-CFLAGS = -std=c++17 -O2
+INCLUDE_DIR = include
+BUILD_DIR = bin
+SRC_DIR = src
+
+CFLAGS = -std=c++17 -O2 -g
 LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
 
-# Cible par défaut : affichage de l'usage du Makefile
-.DEFAULT_GOAL := usage
+SOURCES = $(shell find $(SRC_DIR) -name '*.cpp')
+OBJECTS = $(patsubst $(SRC_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(SOURCES))
 
-# Cible principale de compilation
-Project: src/*.cpp shaders
-	g++ $(CFLAGS) -o bin/Project src/*.cpp $(LDFLAGS)
+TARGET = app
 
-# Cible test : exécuter le projet compilé
-test: Project shaders
-	./bin/Project
+all: $(TARGET)
 
-# Cible de nettoyage : supprimer les fichiers binaires générés
+$(TARGET): $(OBJECTS)
+	$(CXX) $(OBJECTS) -o $(BUILD_DIR)/$(TARGET) -I$(INCLUDE_DIR) $(LDFLAGS)
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(wildcard $(INCLUDE_DIR)/*.h)
+	@mkdir -p $(dir $@)
+	$(CXX) $(CFLAGS) -I$(INCLUDE_DIR) -c $< -o $@ $(LDFLAGS)
+
+exec: all
+	./$(BUILD_DIR)/$(TARGET)
+
 clean:
-	rm -f bin/Project
-	rm -rf bin/tmp/Project
+	rm -rf $(BUILD_DIR) $(TARGET)
 
-# Cible de compilation des shaders
-shaders:
-	glslc res/shaders/shader.vert -o res/shaders/vert.spv
-	glslc res/shaders/shader.frag -o res/shaders/frag.spv
+# Juste pour me rappeler à quel point je perds mon temps 
+lines:
+	find $(SRC_DIR) $(INCLUDE_DIR) -name '*.cpp' -o -name '*.h' | xargs wc -l | cat
 
-# Cible exemple : compilation d'un exemple spécifique
-example:
-	g++ $(CFLAGS) -o bin/example example/example.cpp $(LDFLAGS)
-	./bin/example
-
-# Cible de debug : compilation avec les symboles de debug
-debug:
-	g++ $(CFLAGS) -g -o bin/debug src/*.cpp $(LDFLAGS)
-	gdb bin/debug
-
-# Cible d'usage : afficher les instructions d'utilisation du Makefile
-usage:
-	@echo "Utilisation du Makefile :"
-	@echo "  make                - Renvoie un usage"
-	@echo "  make test           - Compile et exécute le projet principal"
-	@echo "  make clean          - Supprime les fichiers générés"
-	@echo "  make shaders        - Compile les shaders"
-	@echo "  make example        - Compile et exécute un exemple"
-	@echo "  make debug          - Compile avec debug et lance gdb"
+.PHONY: all exec clean lines exec
