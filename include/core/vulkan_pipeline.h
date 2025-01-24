@@ -1,11 +1,9 @@
 #ifndef VULKAN_PIPELINE_HPP
 #define VULKAN_PIPELINE_HPP
 
-#include <iostream>
-#include <vector>
-#include <array>
-#include <fstream>
 #include <vulkan/vulkan.h>
+#include <vector>
+#include <fstream>
 
 class VulkanDevice;
 class VulkanSwapchain;
@@ -16,6 +14,7 @@ public:
     void createDescriptorSetLayout();
     void createGraphicsPipeline();
     void cleanup();
+    void cleanupDescriptorSetLayout();
 
     VkRenderPass getRenderPass() const { return renderPass; }
     VkDescriptorSetLayout getDescriptorSetLayout() const { return descriptorSetLayout; }

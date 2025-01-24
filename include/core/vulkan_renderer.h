@@ -1,11 +1,8 @@
 #ifndef VULKAN_RENDERER_HPP
 #define VULKAN_RENDERER_HPP
 
-#include <iostream>
-#include <vector>
-#include <array>
-
 #include <vulkan/vulkan.h>
+#include <vector>
 
 class VulkanDevice;
 class VulkanSwapchain;

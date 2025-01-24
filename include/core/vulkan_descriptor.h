@@ -2,9 +2,7 @@
 #define DESCRIPTOR_MANAGER_HPP
 
 #include <vulkan/vulkan.h>
-#include <iostream>
 #include <vector>
-#include <array>
 
 class VulkanDevice;
 class VulkanPipeline;

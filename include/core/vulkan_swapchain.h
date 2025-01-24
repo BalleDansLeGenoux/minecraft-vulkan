@@ -1,11 +1,8 @@
 #ifndef VULKAN_SWAPCHAIN_HPP
 #define VULKAN_SWAPCHAIN_HPP
 
-#include <iostream>
-#include <vector>
-#include <limits>
-#include <algorithm>
 #include <vulkan/vulkan.h>
+#include <vector>
 
 class VulkanApp;
 class VulkanInstance;

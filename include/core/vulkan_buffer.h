@@ -3,7 +3,6 @@
 
 #include <vulkan/vulkan.h>
 #include <vector>
-#include <cstdint>
 
 class VulkanDevice;
 class VulkanSwapchain;
@@ -18,7 +17,8 @@ public:
     void createIndexBuffer();
     void createUniformBuffers();
     void updateUniformBuffer();
-    void cleanup();
+    void cleanupUniform();
+    void cleanupVertexIndices();
 
     void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
     void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);

@@ -72,6 +72,7 @@ void VulkanApp::run() {
     initWindow();
     initVulkan();
     mainLoop();
+    cleanup();
 }
 
 void VulkanApp::drawFrame() {
@@ -193,6 +194,22 @@ void VulkanApp::recordCommandBuffer(uint32_t imageIndex) {
     if (vkEndCommandBuffer(*vulkanRenderer.getCurrentCommandBuffers()) != VK_SUCCESS) {
         throw std::runtime_error("failed to record command buffer!");
     }
+}
+
+void VulkanApp::cleanup() {
+    vulkanSwapchain.cleanup();
+    vulkanPipeline.cleanup();
+    vulkanBuffer.cleanupUniform();
+    vulkanDescriptor.cleanup();
+    vulkanTexture.cleanup();
+    vulkanPipeline.cleanupDescriptorSetLayout();
+    vulkanBuffer.cleanupVertexIndices();
+    vulkanRenderer.cleanup();
+    vulkanDevice.cleanup();
+    vulkanInstance.cleanup();
+
+    glfwDestroyWindow(window);
+    glfwTerminate();
 }
 
 void VulkanApp::framebufferResizeCallback(GLFWwindow* window, int width, int height) {

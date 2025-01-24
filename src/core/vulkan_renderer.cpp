@@ -1,38 +1,9 @@
-#include "core/vulkan_renderer.h"
+#include "core/vulkan_renderer.h" 
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-
-#include <vulkan/vulkan.h>
-
-#include <iostream>
-#include <fstream>
-#include <stdexcept>
-#include <algorithm>
-#include <chrono>
-#include <vector>
-#include <cstring>
-#include <cstdlib>
-#include <cstdint>
-#include <limits>
-#include <array>
-#include <optional>
-#include <set>
-
-#include <glm/glm.hpp>
-#include <glm/ext/matrix_transform.hpp>
-#include <glm/ext/matrix_clip_space.hpp>
-
-#include "core/vulkan_app.h"
 #include "core/vulkan_config.h"
-#include "core/vulkan_buffer.h"
-#include "core/vulkan_descriptor.h"
 #include "core/vulkan_device.h"
-#include "core/vulkan_instance.h"
 #include "core/vulkan_pipeline.h"
 #include "core/vulkan_swapchain.h"
-#include "core/vulkan_texture.h"
-#include "core/vulkan_tools.h"
 
 void VulkanRenderer::createCommandPool() {
     QueueFamilyIndices queueFamilyIndices = vulkanDevice.findQueueFamilies(vulkanDevice.getPhysicalDevice());

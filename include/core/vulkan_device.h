@@ -2,10 +2,13 @@
 #define VULKAN_DEVICE_HPP
 
 #include <vulkan/vulkan.h>
-#include <iostream>
 #include <vector>
 #include <optional>
-#include <set>
+
+class VulkanInstance;
+class VulkanDevice;
+class VulkanSwapchain;
+class VulkanBuffer;
 
 struct QueueFamilyIndices {
     std::optional<uint32_t> graphicsFamily;
@@ -15,11 +18,6 @@ struct QueueFamilyIndices {
         return graphicsFamily.has_value() && presentFamily.has_value();
     }
 };
-
-class VulkanInstance;
-class VulkanDevice;
-class VulkanSwapchain;
-class VulkanBuffer;
 
 class VulkanDevice {
 public:

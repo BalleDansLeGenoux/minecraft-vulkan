@@ -1,41 +1,13 @@
 #include "core/vulkan_texture.h"
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
-#include <vulkan/vulkan.h>
-
-#include <iostream>
-#include <fstream>
 #include <stdexcept>
-#include <algorithm>
-#include <chrono>
-#include <vector>
-#include <cstring>
-#include <cstdlib>
-#include <cstdint>
-#include <limits>
-#include <array>
-#include <optional>
-#include <set>
 
-#include <glm/glm.hpp>
-#include <glm/ext/matrix_transform.hpp>
-#include <glm/ext/matrix_clip_space.hpp>
-
-#include "core/vulkan_app.h"
-#include "core/vulkan_config.h"
 #include "core/vulkan_buffer.h"
-#include "core/vulkan_descriptor.h"
 #include "core/vulkan_device.h"
-#include "core/vulkan_instance.h"
-#include "core/vulkan_pipeline.h"
-#include "core/vulkan_renderer.h"
 #include "core/vulkan_swapchain.h"
-#include "core/vulkan_tools.h"
 
 void VulkanTexture::createTextureImage() {
     int texWidth, texHeight, texChannels;
@@ -96,7 +68,11 @@ void VulkanTexture::createTextureSampler() {
 }
 
 void VulkanTexture::cleanup() {
+    vkDestroySampler(vulkanDevice.getDevice(), textureSampler, nullptr);
+    vkDestroyImageView(vulkanDevice.getDevice(), textureImageView, nullptr);
 
+    vkDestroyImage(vulkanDevice.getDevice(), textureImage, nullptr);
+    vkFreeMemory(vulkanDevice.getDevice(), textureImageMemory, nullptr);
 }
 
 void VulkanTexture::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
