@@ -10,7 +10,7 @@ OBJECTS = $(patsubst $(SRC_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(SOURCES))
 
 TARGET = app
 
-all: $(TARGET)
+all: $(TARGET) shaders
 
 $(TARGET): $(OBJECTS)
 	$(CXX) $(OBJECTS) -o $(BUILD_DIR)/$(TARGET) -I$(INCLUDE_DIR) $(LDFLAGS)
@@ -29,4 +29,9 @@ clean:
 lines:
 	find $(SRC_DIR) $(INCLUDE_DIR) -name '*.cpp' -o -name '*.h' | xargs wc -l | cat
 
-.PHONY: all exec clean lines exec
+shaders:
+	glslc res/shaders/shader.comp -o res/shaders/comp.spv
+	glslc res/shaders/shader.vert -o res/shaders/comp.vert
+	glslc res/shaders/shader.frag -o res/shaders/comp.frag
+
+.PHONY: all exec clean lines exec shaders

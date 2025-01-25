@@ -1,5 +1,6 @@
 #include "core/vulkan_instance.h"
 
+#include <iostream>
 #include <cstring>
 
 #include "core/vulkan_app.h"

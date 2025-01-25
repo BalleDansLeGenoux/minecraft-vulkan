@@ -1,0 +1,44 @@
+#version 450
+layout(set = 0, binding = 0) buffer VertexBuffer {
+    vec3 vertices[];
+};
+
+layout(set = 0, binding = 1) buffer IndexBuffer {
+    uint indices[];
+};
+
+layout(push_constant) uniform PushConstants {
+    uint numCubes;
+    uint cubeSize;
+} pushConstants;
+
+void main() {
+    uint id = gl_GlobalInvocationID.x;
+
+    if (id >= pushConstants.numCubes)
+        return;
+
+    // Calculate position based on id (this is just an example, change it as needed)
+    uint cubeIndex = id * 8;  // 8 vertices per cube
+    uint indexIndex = id * 36; // 36 indices per cube
+
+    // Vertices for a cube (just a basic cube for example)
+    vertices[cubeIndex + 0] = vec3(0.0, 0.0, 0.0);
+    vertices[cubeIndex + 1] = vec3(1.0, 0.0, 0.0);
+    vertices[cubeIndex + 2] = vec3(1.0, 1.0, 0.0);
+    vertices[cubeIndex + 3] = vec3(0.0, 1.0, 0.0);
+    vertices[cubeIndex + 4] = vec3(0.0, 0.0, 1.0);
+    vertices[cubeIndex + 5] = vec3(1.0, 0.0, 1.0);
+    vertices[cubeIndex + 6] = vec3(1.0, 1.0, 1.0);
+    vertices[cubeIndex + 7] = vec3(0.0, 1.0, 1.0);
+
+    // Define the indices for a cube (12 triangles, 36 indices)
+    indices[indexIndex + 0] = cubeIndex + 0;
+    indices[indexIndex + 1] = cubeIndex + 1;
+    indices[indexIndex + 2] = cubeIndex + 2;
+    indices[indexIndex + 3] = cubeIndex + 2;
+    indices[indexIndex + 4] = cubeIndex + 3;
+    indices[indexIndex + 5] = cubeIndex + 0;
+    
+    // Add the remaining indices here for the other 6 faces of the cube...
+}
