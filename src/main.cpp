@@ -5,6 +5,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <iostream>
+
 #include "core/vulkan_app.h"
 
 int main(int argc, char const *argv[])
