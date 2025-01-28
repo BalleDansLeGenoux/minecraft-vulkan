@@ -5,9 +5,9 @@
 #include <glm/glm.hpp>
 
 struct Vertex {
-    glm::vec3 pos;
-    glm::vec3 color;
-    glm::vec2 texCoord;
+    alignas(16) glm::vec3 pos;
+    alignas(16) glm::vec3 color;
+    alignas(16) glm::vec2 texCoord;
 
     static VkVertexInputBindingDescription getBindingDescription() {
         VkVertexInputBindingDescription bindingDescription{};
@@ -44,6 +44,12 @@ struct UniformBufferObject {
     alignas(16) glm::mat4 model;
     alignas(16) glm::mat4 view;
     alignas(16) glm::mat4 proj;
+};
+
+struct BlockUpdate {
+    glm::ivec2 chunkPos;
+    glm::ivec3 blockPos;
+    int blockID;
 };
 
 #endif

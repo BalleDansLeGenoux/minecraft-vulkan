@@ -1,44 +1,155 @@
 #version 450
-layout(set = 0, binding = 0) buffer VertexBuffer {
-    vec3 vertices[];
+
+struct Vertex {
+    vec3 pos;
+    vec3 color;
+    vec2 texCoord;
 };
 
-layout(set = 0, binding = 1) buffer IndexBuffer {
-    uint indices[];
+struct BlockUpdate {
+    ivec2 chunkPos;
+    uvec3 blockPos;
+    uint blockID;
 };
 
-layout(push_constant) uniform PushConstants {
-    uint numCubes;
-    uint cubeSize;
-} pushConstants;
+layout(std430, binding = 0) buffer BlockBuffer {
+    uint voxelData[];
+};
+
+layout(std430, binding = 1) readonly buffer UpdateBuffer {
+    BlockUpdate updates[];
+};
+
+layout(std430, binding = 2) buffer VertexBuffer {
+    Vertex vertexData[];
+};
+
+layout(std430, binding = 3) buffer IndexBuffer {
+    uint indexData[];
+};
 
 void main() {
-    uint id = gl_GlobalInvocationID.x;
+    vertexData[0].pos = vec3(-0.5f, -0.5f, 0.5f);
+    vertexData[0].color = vec3(0.9f, 0.9f, 0.9f);
+    vertexData[0].texCoord = vec2(0.0f, 0.0f);
 
-    if (id >= pushConstants.numCubes)
-        return;
+    vertexData[1].pos = vec3(0.5f, -0.5f, 0.5f);
+    vertexData[1].color = vec3(0.9f, 0.9f, 0.9f);
+    vertexData[1].texCoord = vec2(1.0f/16, 0.0f);
 
-    // Calculate position based on id (this is just an example, change it as needed)
-    uint cubeIndex = id * 8;  // 8 vertices per cube
-    uint indexIndex = id * 36; // 36 indices per cube
+    vertexData[2].pos = vec3(0.5f, 0.5f, 0.5f);
+    vertexData[2].color = vec3(0.9f, 0.9f, 0.9f);
+    vertexData[2].texCoord = vec2(1.0f/16, 1.0f/16);
 
-    // Vertices for a cube (just a basic cube for example)
-    vertices[cubeIndex + 0] = vec3(0.0, 0.0, 0.0);
-    vertices[cubeIndex + 1] = vec3(1.0, 0.0, 0.0);
-    vertices[cubeIndex + 2] = vec3(1.0, 1.0, 0.0);
-    vertices[cubeIndex + 3] = vec3(0.0, 1.0, 0.0);
-    vertices[cubeIndex + 4] = vec3(0.0, 0.0, 1.0);
-    vertices[cubeIndex + 5] = vec3(1.0, 0.0, 1.0);
-    vertices[cubeIndex + 6] = vec3(1.0, 1.0, 1.0);
-    vertices[cubeIndex + 7] = vec3(0.0, 1.0, 1.0);
+    vertexData[3].pos = vec3(-0.5f, 0.5f, 0.5f);
+    vertexData[3].color = vec3(0.9f, 0.9f, 0.9f);
+    vertexData[3].texCoord = vec2(0.0f, 1.0f/16);
 
-    // Define the indices for a cube (12 triangles, 36 indices)
-    indices[indexIndex + 0] = cubeIndex + 0;
-    indices[indexIndex + 1] = cubeIndex + 1;
-    indices[indexIndex + 2] = cubeIndex + 2;
-    indices[indexIndex + 3] = cubeIndex + 2;
-    indices[indexIndex + 4] = cubeIndex + 3;
-    indices[indexIndex + 5] = cubeIndex + 0;
-    
-    // Add the remaining indices here for the other 6 faces of the cube...
+
+
+    vertexData[4].pos = vec3(-0.5f, 0.5f, 0.5f);
+    vertexData[4].color = vec3(1.0f, 0.0f, 0.0f); 
+    vertexData[4].texCoord = vec2((1.0f/16)*3, 0.0f);
+
+    vertexData[5].pos = vec3(0.5f, 0.5f, 0.5f);
+    vertexData[5].color = vec3(0.0f, 1.0f, 0.0f); 
+    vertexData[5].texCoord = vec2((1.0f/16)*4, 0.0f);
+
+    vertexData[6].pos = vec3(0.5f, 0.5f, -0.5f);
+    vertexData[6].color = vec3(0.0f, 0.0f, 1.0f); 
+    vertexData[6].texCoord = vec2((1.0f/16)*4, 1.0f/16);
+
+    vertexData[7].pos = vec3(-0.5f, 0.5f, -0.5f);
+    vertexData[7].color = vec3(1.0f, 1.0f, 1.0f); 
+    vertexData[7].texCoord = vec2((1.0f/16)*3, 1.0f/16);
+
+
+
+    vertexData[8].pos = vec3(-0.5f, -0.5f, 0.5f);
+    vertexData[8].color = vec3(1.0f, 0.0f, 0.0f); 
+    vertexData[8].texCoord = vec2((1.0f/16)*3, 0.0f);
+
+    vertexData[9].pos = vec3(-0.5f, 0.5f, 0.5f);
+    vertexData[9].color = vec3(0.0f, 1.0f, 0.0f); 
+    vertexData[9].texCoord = vec2((1.0f/16)*4, 0.0f);
+
+    vertexData[10].pos = vec3(-0.5f, 0.5f, -0.5f);
+    vertexData[10].color = vec3(0.0f, 0.0f, 1.0f); 
+    vertexData[10].texCoord = vec2((1.0f/16)*4, 1.0f/16);
+
+    vertexData[11].pos = vec3(-0.5f, -0.5f, -0.5f);
+    vertexData[11].color = vec3(1.0f, 1.0f, 1.0f); 
+    vertexData[11].texCoord = vec2((1.0f/16)*3, 1.0f/16);
+
+
+
+    vertexData[12].pos = vec3(0.5f, 0.5f, 0.5f);
+    vertexData[12].color = vec3(1.0f, 0.0f, 0.0f); 
+    vertexData[12].texCoord = vec2((1.0f/16)*3, 0.0f);
+
+    vertexData[13].pos = vec3(0.5f, -0.5f, 0.5f);
+    vertexData[13].color = vec3(0.0f, 1.0f, 0.0f); 
+    vertexData[13].texCoord = vec2((1.0f/16)*4, 0.0f);
+
+    vertexData[14].pos = vec3(0.5f, -0.5f, -0.5f);
+    vertexData[14].color = vec3(0.0f, 0.0f, 1.0f); 
+    vertexData[14].texCoord = vec2((1.0f/16)*4, 1.0f/16);
+
+    vertexData[15].pos = vec3(0.5f, 0.5f, -0.5f);
+    vertexData[15].color = vec3(1.0f, 1.0f, 1.0f); 
+    vertexData[15].texCoord = vec2((1.0f/16)*3, 1.0f/16);
+
+
+
+    vertexData[16].pos = vec3(0.5f, -0.5f, 0.5f);
+    vertexData[16].color = vec3(1.0f, 0.0f, 0.0f); 
+    vertexData[16].texCoord = vec2((1.0f/16)*3, 0.0f);
+
+    vertexData[17].pos = vec3(-0.5f, -0.5f, 0.5f);
+    vertexData[17].color = vec3(0.0f, 1.0f, 0.0f); 
+    vertexData[17].texCoord = vec2((1.0f/16)*4, 0.0f);
+
+    vertexData[18].pos = vec3(-0.5f, -0.5f, -0.5f);
+    vertexData[18].color = vec3(0.0f, 0.0f, 1.0f); 
+    vertexData[18].texCoord = vec2((1.0f/16)*4, 1.0f/16);
+
+    vertexData[19].pos = vec3(0.5f, -0.5f, -0.5f);
+    vertexData[19].color = vec3(1.0f, 1.0f, 1.0f); 
+    vertexData[19].texCoord = vec2((1.0f/16)*3, 1.0f/16);
+
+    indexData[0] = 0;
+    indexData[1] = 1;
+    indexData[2] = 2;
+    indexData[3] = 2;
+    indexData[4] = 3;
+    indexData[5] = 0;
+
+    indexData[6] = 4;
+    indexData[7] = 5;
+    indexData[8] = 6;
+    indexData[9] = 6;
+    indexData[10] = 7;
+    indexData[11] = 4;
+
+    indexData[12] = 8;
+    indexData[13] = 9;
+    indexData[14] = 10;
+    indexData[15] = 10;
+    indexData[16] = 11;
+    indexData[17] = 8;
+
+    indexData[18] = 12;
+    indexData[19] = 13;
+    indexData[20] = 14;
+    indexData[21] = 14;
+    indexData[22] = 15;
+    indexData[23] = 12;
+
+    indexData[24] = 16;
+    indexData[25] = 17;
+    indexData[26] = 18;
+    indexData[27] = 18;
+    indexData[28] = 19;
+    indexData[29] = 16;
+
 }

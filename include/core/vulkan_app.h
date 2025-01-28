@@ -6,6 +6,7 @@
 
 #include "core/vulkan_config.h"
 #include "core/vulkan_buffer.h"
+#include "core/vulkan_compute.h"
 #include "core/vulkan_descriptor.h"
 #include "core/vulkan_device.h"
 #include "core/vulkan_instance.h"
@@ -23,6 +24,7 @@ public:
     void run();
     void drawFrame();
     void recordCommandBuffer(uint32_t imageIndex);
+    void recordComputeCommandBuffer();
     void cleanup();
 
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
@@ -31,8 +33,9 @@ public:
 
     VulkanApp() :
     vulkanBuffer(vulkanDevice, vulkanSwapchain, vulkanPipeline, vulkanRenderer),
-    vulkanDescriptor(vulkanDevice, vulkanPipeline, vulkanBuffer, vulkanTexture),
-    vulkanDevice(vulkanInstance, vulkanSwapchain, vulkanBuffer),
+    vulkanCompute(vulkanDevice, vulkanPipeline, vulkanDescriptor, vulkanRenderer),
+    vulkanDescriptor(vulkanDevice, vulkanPipeline, vulkanBuffer, vulkanTexture, vulkanCompute, vulkanRenderer),
+    vulkanDevice(vulkanInstance, vulkanSwapchain, vulkanBuffer, vulkanCompute),
     vulkanInstance(*this),
     vulkanPipeline(vulkanDevice, vulkanSwapchain),
     vulkanRenderer(vulkanDevice, vulkanSwapchain, vulkanPipeline),
@@ -44,6 +47,7 @@ private:
     bool framebufferResized = false;
 
     VulkanBuffer vulkanBuffer;
+    VulkanCompute vulkanCompute;
     VulkanDescriptor vulkanDescriptor;
     VulkanDevice vulkanDevice;
     VulkanInstance vulkanInstance;

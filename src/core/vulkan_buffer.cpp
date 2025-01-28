@@ -14,43 +14,67 @@
 #include "core/vulkan_swapchain.h" 
 
 void VulkanBuffer::createVertexBuffer() {
-    VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+    VkDeviceSize bufferSize = sizeof(Vertex) * BASE_BUFFER_CAPACITY;
 
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
-    void* data;
-    vkMapMemory(vulkanDevice.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
-        memcpy(data, vertices.data(), (size_t) bufferSize);
-    vkUnmapMemory(vulkanDevice.getDevice(), stagingBufferMemory);
-
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
-
-    copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
-
-    vkDestroyBuffer(vulkanDevice.getDevice(), stagingBuffer, nullptr);
-    vkFreeMemory(vulkanDevice.getDevice(), stagingBufferMemory, nullptr);
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
 }
 
 void VulkanBuffer::createIndexBuffer() {
-    VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+    VkDeviceSize bufferSize = sizeof(uint32_t) * BASE_BUFFER_CAPACITY;
 
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+}
 
-    void* data;
-    vkMapMemory(vulkanDevice.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
-        memcpy(data, indices.data(), (size_t) bufferSize);
-    vkUnmapMemory(vulkanDevice.getDevice(), stagingBufferMemory);
+// void VulkanBuffer::createVertexBuffer() {
+//     VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+//     VkBuffer stagingBuffer;
+//     VkDeviceMemory stagingBufferMemory;
+//     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
-    copyBuffer(stagingBuffer, indexBuffer, bufferSize);
+//     void* data;
+//     vkMapMemory(vulkanDevice.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+//         memcpy(data, vertices.data(), (size_t) bufferSize);
+//     vkUnmapMemory(vulkanDevice.getDevice(), stagingBufferMemory);
 
-    vkDestroyBuffer(vulkanDevice.getDevice(), stagingBuffer, nullptr);
-    vkFreeMemory(vulkanDevice.getDevice(), stagingBufferMemory, nullptr);
+//     createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+
+//     copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
+
+//     vkDestroyBuffer(vulkanDevice.getDevice(), stagingBuffer, nullptr);
+//     vkFreeMemory(vulkanDevice.getDevice(), stagingBufferMemory, nullptr);
+// }
+
+// void VulkanBuffer::createIndexBuffer() {
+//     VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+
+//     VkBuffer stagingBuffer;
+//     VkDeviceMemory stagingBufferMemory;
+//     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+//     void* data;
+//     vkMapMemory(vulkanDevice.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+//         memcpy(data, indices.data(), (size_t) bufferSize);
+//     vkUnmapMemory(vulkanDevice.getDevice(), stagingBufferMemory);
+
+//     createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+
+//     copyBuffer(stagingBuffer, indexBuffer, bufferSize);
+
+//     vkDestroyBuffer(vulkanDevice.getDevice(), stagingBuffer, nullptr);
+//     vkFreeMemory(vulkanDevice.getDevice(), stagingBufferMemory, nullptr);
+// }
+
+void VulkanBuffer::createVoxelBuffer() {
+    VkDeviceSize bufferSize = sizeof(uint) * CHUNK_HEIGHT * CHUNK_WIDTH * CHUNK_WIDTH * RENDER_DISTANCE * RENDER_DISTANCE * 4;
+
+    createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, voxelBuffer, voxelBufferMemory);
+}
+
+void VulkanBuffer::createUpdateVoxelBuffer() {
+    VkDeviceSize bufferSize = sizeof(BlockUpdate) * CHUNK_HEIGHT * CHUNK_WIDTH * CHUNK_WIDTH * RENDER_DISTANCE * RENDER_DISTANCE * 4;
+
+    createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, updateVoxelBuffer, updateVoxelBufferMemory);
 }
 
 void VulkanBuffer::createUniformBuffers() {
@@ -88,6 +112,12 @@ void VulkanBuffer::cleanupVertexIndices() {
 
     vkDestroyBuffer(vulkanDevice.getDevice(), vertexBuffer, nullptr);
     vkFreeMemory(vulkanDevice.getDevice(), vertexBufferMemory, nullptr);
+
+    vkDestroyBuffer(vulkanDevice.getDevice(), voxelBuffer, nullptr);
+    vkFreeMemory(vulkanDevice.getDevice(), voxelBufferMemory, nullptr);
+
+    vkDestroyBuffer(vulkanDevice.getDevice(), updateVoxelBuffer, nullptr);
+    vkFreeMemory(vulkanDevice.getDevice(), updateVoxelBufferMemory, nullptr);
 }
 
 void VulkanBuffer::cleanupUniform() {
@@ -195,8 +225,8 @@ void VulkanBuffer::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffer;
 
-    vkQueueSubmit(vulkanDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-    vkQueueWaitIdle(vulkanDevice.getGraphicsQueue());
+    vkQueueSubmit(*vulkanDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(*vulkanDevice.getGraphicsQueue());
 
     vkFreeCommandBuffers(vulkanDevice.getDevice(), vulkanRenderer.getCommandPool(), 1, &commandBuffer);
 }

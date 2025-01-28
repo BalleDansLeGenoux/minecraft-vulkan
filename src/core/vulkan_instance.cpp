@@ -64,7 +64,15 @@ if (enableValidationLayers && !checkValidationLayerSupport()) {
     }
 }
 
-void VulkanInstance::createSurface() {    
+void VulkanInstance::createSurface() {
+    if (instance == VK_NULL_HANDLE) {
+        throw std::runtime_error("Vulkan instance is null!");
+    }
+
+    if (vulkanApp.getWindow() == nullptr) {
+        throw std::runtime_error("GLFW window is null!");
+    }
+
     if (glfwCreateWindowSurface(instance, vulkanApp.getWindow(), nullptr, &surface) != VK_SUCCESS) {
         throw std::runtime_error("failed to create window surface!");
     }

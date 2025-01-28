@@ -10,7 +10,7 @@ OBJECTS = $(patsubst $(SRC_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(SOURCES))
 
 TARGET = app
 
-all: $(TARGET) shaders
+all: shaders $(TARGET)
 
 $(TARGET): $(OBJECTS)
 	$(CXX) $(OBJECTS) -o $(BUILD_DIR)/$(TARGET) -I$(INCLUDE_DIR) $(LDFLAGS)
@@ -31,7 +31,10 @@ lines:
 
 shaders:
 	glslc res/shaders/shader.comp -o res/shaders/comp.spv
-	glslc res/shaders/shader.vert -o res/shaders/comp.vert
-	glslc res/shaders/shader.frag -o res/shaders/comp.frag
+	glslc res/shaders/shader.vert -o res/shaders/vert.spv
+	glslc res/shaders/shader.frag -o res/shaders/frag.spv
 
-.PHONY: all exec clean lines exec shaders
+debug: all
+	gdb $(BUILD_DIR)/$(TARGET)
+
+.PHONY: all exec clean lines exec shaders debug

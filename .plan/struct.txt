@@ -44,4 +44,13 @@
  ├── Index
  ├── Shader
 
-vulkan_instance.cpp vulkan_device.cpp vulkan_swapchain.cpp vulkan_pipeline.cpp vulkan_renderer.cpp
+Memoire GPU:
+    VkBuffer chunk_charger:
+        - tableau de chunk, tableau de tableau de voxel (dynamique)
+        - tableau de voxel (statique, on stocke aussi les blocs vides)
+        - on stocke juste le type du bloc
+        - on stocke que les chunks chargés
+        - coté cpu pour stocker les chunks on stocke ça position en memoire gpu
+    VkBuffer vertex:
+
+

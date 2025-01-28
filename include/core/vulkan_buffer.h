@@ -15,6 +15,8 @@ class VulkanBuffer {
 public:
     void createVertexBuffer();
     void createIndexBuffer();
+    void createVoxelBuffer();
+    void createUpdateVoxelBuffer();
     void createUniformBuffers();
     void updateUniformBuffer();
     void cleanupUniform();
@@ -31,6 +33,8 @@ public:
 
     const VkBuffer* getVertexBuffer() const { return &vertexBuffer; }
     const VkBuffer* getIndexBuffer() const { return &indexBuffer; }
+    const VkBuffer* getVoxelBuffer() const { return &voxelBuffer; }
+    const VkBuffer* getUpdateVoxelBuffer() const { return &updateVoxelBuffer; }
 
     VulkanBuffer(VulkanDevice& pvulkanDevice, VulkanSwapchain& pvulkanSwapchain, VulkanPipeline& pvulkanPipeline, VulkanRenderer& pvulkanRenderer)
     : vulkanDevice(pvulkanDevice), vulkanSwapchain(pvulkanSwapchain), vulkanPipeline(pvulkanPipeline), vulkanRenderer(pvulkanRenderer) {}
@@ -41,6 +45,12 @@ private:
 
     VkBuffer indexBuffer;
     VkDeviceMemory indexBufferMemory;
+
+    VkBuffer voxelBuffer;
+    VkDeviceMemory voxelBufferMemory;
+
+    VkBuffer updateVoxelBuffer;
+    VkDeviceMemory updateVoxelBufferMemory;
 
     std::vector<VkBuffer> uniformBuffers;
     std::vector<VkDeviceMemory> uniformBuffersMemory;

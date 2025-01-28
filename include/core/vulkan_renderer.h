@@ -12,6 +12,8 @@ class VulkanRenderer {
 public:
     void createCommandPool();
     void createCommandBuffers();
+    void createComputeCommandPool(uint32_t computeQueueFamily);
+    void createComputeCommandBuffers();
     void createSyncObjects();
     void createFramebuffers();
     void cleanup();
@@ -20,21 +22,31 @@ public:
     : vulkanDevice(pvulkanDevice), vulkanSwapchain(pvulkanSwapchain), vulkanPipeline(pvulkanPipeline), currentFrame(0) {};
 
     VkCommandPool getCommandPool() const { return commandPool; }
-    const VkCommandBuffer* getCurrentCommandBuffers() const { return &commandBuffers[currentFrame]; }
-    std::vector<VkFence> getInFlightFences() const { return inFlightFences; }
+    VkCommandBuffer* getCurrentCommandBuffers() { return &commandBuffers[currentFrame]; }
+    VkCommandBuffer* getCurrentComputeCommandBuffers() { return &computeCommandBuffers[currentFrame]; }
+    std::vector<VkFence>* getInFlightFences() { return &inFlightFences; }
+    std::vector<VkFence>* getComputeInFlightFences() { return &computeInFlightFences; }
     uint32_t getCurrentFrame() const { return currentFrame; }
     const VkFence* getCurrentInFlightFences() const { return &inFlightFences[currentFrame]; }
+    const VkFence* getCurrentComputeInFlightFences() const { return &computeInFlightFences[currentFrame]; }
     const VkSemaphore* getCurrentImageAvailableSemaphores() const { return &imageAvailableSemaphores[currentFrame]; }
     const VkSemaphore* getCurrentRenderFinishedSemaphores() const { return &renderFinishedSemaphores[currentFrame]; }
+    const VkSemaphore* getCurrentComputeFinishedSemaphores() const { return &computeFinishedSemaphores[currentFrame]; }
 
     void incrementeCurrentFrame();
 
 private:
     VkCommandPool commandPool;
+    
     std::vector<VkCommandBuffer> commandBuffers;
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;
     std::vector<VkFence> inFlightFences;
+
+    std::vector<VkCommandBuffer> computeCommandBuffers;
+    std::vector<VkSemaphore> computeFinishedSemaphores;
+    std::vector<VkFence> computeInFlightFences;
+
     uint32_t currentFrame;
 
     VulkanDevice& vulkanDevice;

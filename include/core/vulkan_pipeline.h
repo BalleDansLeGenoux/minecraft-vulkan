@@ -16,7 +16,11 @@ public:
     void cleanup();
     void cleanupDescriptorSetLayout();
 
+    VkShaderModule createShaderModule(const std::vector<char>& code);
+    static std::vector<char> readFile(const std::string& filename);
+
     VkRenderPass getRenderPass() const { return renderPass; }
+
     VkDescriptorSetLayout getDescriptorSetLayout() const { return descriptorSetLayout; }
     const VkPipeline* getGraphicsPipeline() const { return &graphicsPipeline; }
     const VkPipelineLayout* getPipelineLayout() const { return &pipelineLayout; }
@@ -26,15 +30,13 @@ public:
 
 private:
     VkRenderPass renderPass;
+
     VkDescriptorSetLayout descriptorSetLayout;
     VkPipelineLayout pipelineLayout;
     VkPipeline graphicsPipeline;
 
     VulkanDevice& vulkanDevice;
     VulkanSwapchain& vulkanSwapchain;
-
-    VkShaderModule createShaderModule(const std::vector<char>& code);
-    static std::vector<char> readFile(const std::string& filename);
 
 };
 
