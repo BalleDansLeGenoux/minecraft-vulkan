@@ -30,6 +30,7 @@ public:
     VkExtent2D getSwapChainExtent() const { return swapChainExtent; }
     std::vector<VkImageView> getSwapChainImageViews() const { return swapChainImageViews; }
     std::vector<VkFramebuffer> getSwapChainFramebuffers() const { return swapChainFramebuffers; }
+    VkFramebuffer* getFramebuffers(uint32_t imageIndex) { return &swapChainFramebuffers[imageIndex]; }
 
     void addSwapChainFramebuffers(VkFramebuffer pframeBuffer);
 

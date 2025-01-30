@@ -29,127 +29,129 @@ layout(std430, binding = 3) buffer IndexBuffer {
 };
 
 void main() {
-    vertexData[0].pos = vec3(-0.5f, -0.5f, 0.5f);
-    vertexData[0].color = vec3(0.9f, 0.9f, 0.9f);
-    vertexData[0].texCoord = vec2(0.0f, 0.0f);
+    uint x = gl_GlobalInvocationID.x;
+    uint y = gl_GlobalInvocationID.y;
+    uint z = gl_GlobalInvocationID.z;
 
-    vertexData[1].pos = vec3(0.5f, -0.5f, 0.5f);
-    vertexData[1].color = vec3(0.9f, 0.9f, 0.9f);
-    vertexData[1].texCoord = vec2(1.0f/16, 0.0f);
+    int MAX = 65000;
 
-    vertexData[2].pos = vec3(0.5f, 0.5f, 0.5f);
-    vertexData[2].color = vec3(0.9f, 0.9f, 0.9f);
-    vertexData[2].texCoord = vec2(1.0f/16, 1.0f/16);
+    vertexData[0+20*x].pos = vec3(-0.5f+x, -0.5f+y, 0.5f+z);
+    vertexData[0+20*x].color = vec3(0.9f, 0.9f, 0.9f);
+    vertexData[0+20*x].texCoord = vec2(0.0f, 0.0f);
 
-    vertexData[3].pos = vec3(-0.5f, 0.5f, 0.5f);
-    vertexData[3].color = vec3(0.9f, 0.9f, 0.9f);
-    vertexData[3].texCoord = vec2(0.0f, 1.0f/16);
+    vertexData[1+20*x].pos = vec3(0.5f+x, -0.5f+y, 0.5f+z);
+    vertexData[1+20*x].color = vec3(0.9f, 0.9f, 0.9f);
+    vertexData[1+20*x].texCoord = vec2(1.0f/16, 0.0f);
 
+    vertexData[2+20*x].pos = vec3(0.5f+x, 0.5f+y, 0.5f+z);
+    vertexData[2+20*x].color = vec3(0.9f, 0.9f, 0.9f);
+    vertexData[2+20*x].texCoord = vec2(1.0f/16, 1.0f/16);
 
-
-    vertexData[4].pos = vec3(-0.5f, 0.5f, 0.5f);
-    vertexData[4].color = vec3(1.0f, 0.0f, 0.0f); 
-    vertexData[4].texCoord = vec2((1.0f/16)*3, 0.0f);
-
-    vertexData[5].pos = vec3(0.5f, 0.5f, 0.5f);
-    vertexData[5].color = vec3(0.0f, 1.0f, 0.0f); 
-    vertexData[5].texCoord = vec2((1.0f/16)*4, 0.0f);
-
-    vertexData[6].pos = vec3(0.5f, 0.5f, -0.5f);
-    vertexData[6].color = vec3(0.0f, 0.0f, 1.0f); 
-    vertexData[6].texCoord = vec2((1.0f/16)*4, 1.0f/16);
-
-    vertexData[7].pos = vec3(-0.5f, 0.5f, -0.5f);
-    vertexData[7].color = vec3(1.0f, 1.0f, 1.0f); 
-    vertexData[7].texCoord = vec2((1.0f/16)*3, 1.0f/16);
+    vertexData[3+20*x].pos = vec3(-0.5f+x, 0.5f+y, 0.5f+z);
+    vertexData[3+20*x].color = vec3(0.9f, 0.9f, 0.9f);
+    vertexData[3+20*x].texCoord = vec2(0.0f, 1.0f/16);
 
 
 
-    vertexData[8].pos = vec3(-0.5f, -0.5f, 0.5f);
-    vertexData[8].color = vec3(1.0f, 0.0f, 0.0f); 
-    vertexData[8].texCoord = vec2((1.0f/16)*3, 0.0f);
+    vertexData[4+20*x].pos = vec3(-0.5f+x, 0.5f+y, 0.5f+z);
+    vertexData[4+20*x].color = vec3(1.0f, 0.0f, 0.0f); 
+    vertexData[4+20*x].texCoord = vec2((1.0f/16)*3, 0.0f);
 
-    vertexData[9].pos = vec3(-0.5f, 0.5f, 0.5f);
-    vertexData[9].color = vec3(0.0f, 1.0f, 0.0f); 
-    vertexData[9].texCoord = vec2((1.0f/16)*4, 0.0f);
+    vertexData[5+20*x].pos = vec3(0.5f+x, 0.5f+y, 0.5f+z);
+    vertexData[5+20*x].color = vec3(0.0f, 1.0f, 0.0f); 
+    vertexData[5+20*x].texCoord = vec2((1.0f/16)*4, 0.0f);
 
-    vertexData[10].pos = vec3(-0.5f, 0.5f, -0.5f);
-    vertexData[10].color = vec3(0.0f, 0.0f, 1.0f); 
-    vertexData[10].texCoord = vec2((1.0f/16)*4, 1.0f/16);
+    vertexData[6+20*x].pos = vec3(0.5f+x, 0.5f+y, -0.5f+z);
+    vertexData[6+20*x].color = vec3(0.0f, 0.0f, 1.0f); 
+    vertexData[6+20*x].texCoord = vec2((1.0f/16)*4, 1.0f/16);
 
-    vertexData[11].pos = vec3(-0.5f, -0.5f, -0.5f);
-    vertexData[11].color = vec3(1.0f, 1.0f, 1.0f); 
-    vertexData[11].texCoord = vec2((1.0f/16)*3, 1.0f/16);
-
-
-
-    vertexData[12].pos = vec3(0.5f, 0.5f, 0.5f);
-    vertexData[12].color = vec3(1.0f, 0.0f, 0.0f); 
-    vertexData[12].texCoord = vec2((1.0f/16)*3, 0.0f);
-
-    vertexData[13].pos = vec3(0.5f, -0.5f, 0.5f);
-    vertexData[13].color = vec3(0.0f, 1.0f, 0.0f); 
-    vertexData[13].texCoord = vec2((1.0f/16)*4, 0.0f);
-
-    vertexData[14].pos = vec3(0.5f, -0.5f, -0.5f);
-    vertexData[14].color = vec3(0.0f, 0.0f, 1.0f); 
-    vertexData[14].texCoord = vec2((1.0f/16)*4, 1.0f/16);
-
-    vertexData[15].pos = vec3(0.5f, 0.5f, -0.5f);
-    vertexData[15].color = vec3(1.0f, 1.0f, 1.0f); 
-    vertexData[15].texCoord = vec2((1.0f/16)*3, 1.0f/16);
+    vertexData[7+20*x].pos = vec3(-0.5f+x, 0.5f+y, -0.5f+z);
+    vertexData[7+20*x].color = vec3(1.0f, 1.0f, 1.0f); 
+    vertexData[7+20*x].texCoord = vec2((1.0f/16)*3, 1.0f/16);
 
 
 
-    vertexData[16].pos = vec3(0.5f, -0.5f, 0.5f);
-    vertexData[16].color = vec3(1.0f, 0.0f, 0.0f); 
-    vertexData[16].texCoord = vec2((1.0f/16)*3, 0.0f);
+    vertexData[8+20*x].pos = vec3(-0.5f+x, -0.5f+y, 0.5f+z);
+    vertexData[8+20*x].color = vec3(1.0f, 0.0f, 0.0f); 
+    vertexData[8+20*x].texCoord = vec2((1.0f/16)*3, 0.0f);
 
-    vertexData[17].pos = vec3(-0.5f, -0.5f, 0.5f);
-    vertexData[17].color = vec3(0.0f, 1.0f, 0.0f); 
-    vertexData[17].texCoord = vec2((1.0f/16)*4, 0.0f);
+    vertexData[9+20*x].pos = vec3(-0.5f+x, 0.5f+y, 0.5f+z);
+    vertexData[9+20*x].color = vec3(0.0f, 1.0f, 0.0f); 
+    vertexData[9+20*x].texCoord = vec2((1.0f/16)*4, 0.0f);
 
-    vertexData[18].pos = vec3(-0.5f, -0.5f, -0.5f);
-    vertexData[18].color = vec3(0.0f, 0.0f, 1.0f); 
-    vertexData[18].texCoord = vec2((1.0f/16)*4, 1.0f/16);
+    vertexData[10+20*x].pos = vec3(-0.5f+x, 0.5f+y, -0.5f+z);
+    vertexData[10+20*x].color = vec3(0.0f, 0.0f, 1.0f); 
+    vertexData[10+20*x].texCoord = vec2((1.0f/16)*4, 1.0f/16);
 
-    vertexData[19].pos = vec3(0.5f, -0.5f, -0.5f);
-    vertexData[19].color = vec3(1.0f, 1.0f, 1.0f); 
-    vertexData[19].texCoord = vec2((1.0f/16)*3, 1.0f/16);
+    vertexData[11+20*x].pos = vec3(-0.5f+x, -0.5f+y, -0.5f+z);
+    vertexData[11+20*x].color = vec3(1.0f, 1.0f, 1.0f); 
+    vertexData[11+20*x].texCoord = vec2((1.0f/16)*3, 1.0f/16);
 
-    indexData[0] = 0;
-    indexData[1] = 1;
-    indexData[2] = 2;
-    indexData[3] = 2;
-    indexData[4] = 3;
-    indexData[5] = 0;
 
-    indexData[6] = 4;
-    indexData[7] = 5;
-    indexData[8] = 6;
-    indexData[9] = 6;
-    indexData[10] = 7;
-    indexData[11] = 4;
 
-    indexData[12] = 8;
-    indexData[13] = 9;
-    indexData[14] = 10;
-    indexData[15] = 10;
-    indexData[16] = 11;
-    indexData[17] = 8;
+    vertexData[12+20*x].pos = vec3(0.5f+x, 0.5f+y, 0.5f+z);
+    vertexData[12+20*x].color = vec3(1.0f, 0.0f, 0.0f); 
+    vertexData[12+20*x].texCoord = vec2((1.0f/16)*3, 0.0f);
 
-    indexData[18] = 12;
-    indexData[19] = 13;
-    indexData[20] = 14;
-    indexData[21] = 14;
-    indexData[22] = 15;
-    indexData[23] = 12;
+    vertexData[13+20*x].pos = vec3(0.5f+x, -0.5f+y, 0.5f+z);
+    vertexData[13+20*x].color = vec3(0.0f, 1.0f, 0.0f); 
+    vertexData[13+20*x].texCoord = vec2((1.0f/16)*4, 0.0f);
 
-    indexData[24] = 16;
-    indexData[25] = 17;
-    indexData[26] = 18;
-    indexData[27] = 18;
-    indexData[28] = 19;
-    indexData[29] = 16;
+    vertexData[14+20*x].pos = vec3(0.5f+x, -0.5f+y, -0.5f+z);
+    vertexData[14+20*x].color = vec3(0.0f, 0.0f, 1.0f); 
+    vertexData[14+20*x].texCoord = vec2((1.0f/16)*4, 1.0f/16);
+
+    vertexData[15+20*x].pos = vec3(0.5f+x, 0.5f+y, -0.5f+z);
+    vertexData[15+20*x].color = vec3(1.0f, 1.0f, 1.0f); 
+    vertexData[15+20*x].texCoord = vec2((1.0f/16)*3, 1.0f/16);
+
+
+
+    vertexData[16+20*x].pos = vec3(0.5f+x, -0.5f+y, 0.5f+z);
+    vertexData[16+20*x].color = vec3(1.0f, 0.0f, 0.0f); 
+    vertexData[16+20*x].texCoord = vec2((1.0f/16)*3, 0.0f);
+
+    vertexData[17+20*x].pos = vec3(-0.5f+x, -0.5f+y, 0.5f+z);
+    vertexData[17+20*x].color = vec3(0.0f, 1.0f, 0.0f); 
+    vertexData[17+20*x].texCoord = vec2((1.0f/16)*4, 0.0f);
+
+    vertexData[18+20*x].pos = vec3(-0.5f+x, -0.5f+y, -0.5f+z);
+    vertexData[18+20*x].color = vec3(0.0f, 0.0f, 1.0f); 
+    vertexData[18+20*x].texCoord = vec2((1.0f/16)*4, 1.0f/16);
+
+    vertexData[19+20*x].pos = vec3(0.5f+x, -0.5f+y, -0.5f+z);
+    vertexData[19+20*x].color = vec3(1.0f, 1.0f, 1.0f); 
+    vertexData[19+20*x].texCoord = vec2((1.0f/16)*3, 1.0f/16);
+
+    indexData[0+30*x] = 0+20*x;
+    indexData[1+30*x] = 1+20*x;
+    indexData[2+30*x] = 2+20*x;
+    indexData[3+30*x] = 2+20*x;
+    indexData[4+30*x] = 3+20*x;
+    indexData[5+30*x] = 0+20*x;
+    indexData[6+30*x] = 4+20*x;
+    indexData[7+30*x] = 5+20*x;
+    indexData[8+30*x] = 6+20*x;
+    indexData[9+30*x] = 6+20*x;
+    indexData[10+30*x] = 7+20*x;
+    indexData[11+30*x] = 4+20*x;
+    indexData[12+30*x] = 8+20*x;
+    indexData[13+30*x] = 9+20*x;
+    indexData[14+30*x] = 10+20*x;
+    indexData[15+30*x] = 10+20*x;
+    indexData[16+30*x] = 11+20*x;
+    indexData[17+30*x] = 8+20*x;
+    indexData[18+30*x] = 12+20*x;
+    indexData[19+30*x] = 13+20*x;
+    indexData[20+30*x] = 14+20*x;
+    indexData[21+30*x] = 14+20*x;
+    indexData[22+30*x] = 15+20*x;
+    indexData[23+30*x] = 12+20*x;
+    indexData[24+30*x] = 16+20*x;
+    indexData[25+30*x] = 17+20*x;
+    indexData[26+30*x] = 18+20*x;
+    indexData[27+30*x] = 18+20*x;
+    indexData[28+30*x] = 19+20*x;
+    indexData[29+30*x] = 16+20*x;
 
 }

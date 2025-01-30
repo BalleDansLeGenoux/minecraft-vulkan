@@ -9,7 +9,6 @@
 #include <fstream>
 #include <stdexcept>
 #include <algorithm>
-#include <chrono>
 #include <vector>
 #include <cstring>
 #include <cstdlib>
@@ -160,24 +159,57 @@ void VulkanApp::run() {
 }
 
 void VulkanApp::drawFrame() {
+    // Début du chronométrage (seulement à la première frame)
+    if (frameCount == 0) {
+        lastTime = std::chrono::high_resolution_clock::now();
+    }
+
+    // Incrémenter le compteur de frames
+    frameCount++;
+
+    // Calculer le temps écoulé depuis la dernière mesure
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    float timeElapsed = std::chrono::duration<float>(currentTime - lastTime).count();
+
+    // Si une seconde s'est écoulée, calculer et afficher les FPS
+    if (timeElapsed >= 10.0f) {
+        fps = static_cast<int>(frameCount / timeElapsed); // Calcul des FPS
+        std::cout << "FPS: " << fps << std::endl; // Afficher les FPS dans la console
+
+        // Réinitialiser le compteur et le temps
+        frameCount = 0;
+        lastTime = currentTime;
+    }
+
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    // Compute submission        
-    vkWaitForFences(vulkanDevice.getDevice(), 1, vulkanRenderer.getCurrentComputeInFlightFences(), VK_TRUE, UINT64_MAX);
-    vkResetFences(vulkanDevice.getDevice(), 1, vulkanRenderer.getCurrentComputeInFlightFences());
+    std::vector<VkSemaphore> waitSemaphores = {*vulkanRenderer.getCurrentImageAvailableSemaphores()};
+    std::vector<VkPipelineStageFlags> waitStages = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
-    vkResetCommandBuffer(*vulkanRenderer.getCurrentComputeCommandBuffers(), /*VkCommandBufferResetFlagBits*/ 0);
-    recordComputeCommandBuffer();
+    if (!generated) {
+        std::cout << "[DEBUG] Compute !\n";
+        waitSemaphores.push_back(*vulkanRenderer.getCurrentComputeFinishedSemaphores());
+        waitStages.push_back(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
 
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = vulkanRenderer.getCurrentComputeCommandBuffers();
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = vulkanRenderer.getCurrentComputeFinishedSemaphores();
+        generated = 1;
 
-    if (vkQueueSubmit(*vulkanDevice.getComputeQueue(), 1, &submitInfo, *vulkanRenderer.getCurrentComputeInFlightFences()) != VK_SUCCESS) {
-        throw std::runtime_error("failed to submit compute command buffer!");
-    };
+        // Compute submission        
+        vkWaitForFences(vulkanDevice.getDevice(), 1, vulkanRenderer.getCurrentComputeInFlightFences(), VK_TRUE, UINT64_MAX);
+        vkResetFences(vulkanDevice.getDevice(), 1, vulkanRenderer.getCurrentComputeInFlightFences());
+
+        vkResetCommandBuffer(*vulkanRenderer.getCurrentComputeCommandBuffers(), /*VkCommandBufferResetFlagBits*/ 0);
+        recordComputeCommandBuffer();
+
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = vulkanRenderer.getCurrentComputeCommandBuffers();
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = vulkanRenderer.getCurrentComputeFinishedSemaphores();
+
+        if (vkQueueSubmit(*vulkanDevice.getComputeQueue(), 1, &submitInfo, *vulkanRenderer.getCurrentComputeInFlightFences()) != VK_SUCCESS) {
+            throw std::runtime_error("failed to submit compute command buffer!");
+        };
+    }
 
     // Graphics submission
     vkWaitForFences(vulkanDevice.getDevice(), 1, vulkanRenderer.getCurrentInFlightFences(), VK_TRUE, UINT64_MAX);
@@ -185,8 +217,12 @@ void VulkanApp::drawFrame() {
     uint32_t imageIndex;
     VkResult result = vkAcquireNextImageKHR(vulkanDevice.getDevice(), vulkanSwapchain.getSwapChain(), UINT64_MAX, *vulkanRenderer.getCurrentImageAvailableSemaphores(), VK_NULL_HANDLE, &imageIndex);
 
+    // std::cout << "Image Index : " << imageIndex << std::endl;
+    // std::cout << "Current Frame : " << vulkanRenderer.getCurrentFrame() << std::endl << std::endl;
+
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
         vulkanSwapchain.recreateSwapChain();
+
         return;
     } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
         throw std::runtime_error("failed to acquire swap chain image!");
@@ -199,11 +235,9 @@ void VulkanApp::drawFrame() {
     vkResetCommandBuffer(*vulkanRenderer.getCurrentCommandBuffers(), /*VkCommandBufferResetFlagBits*/ 0);
     recordCommandBuffer(imageIndex);
 
-    VkSemaphore waitSemaphores[] = {*vulkanRenderer.getCurrentImageAvailableSemaphores(), *vulkanRenderer.getCurrentComputeFinishedSemaphores()};
-    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT};
-    submitInfo.waitSemaphoreCount = 2;
-    submitInfo.pWaitSemaphores = waitSemaphores;
-    submitInfo.pWaitDstStageMask = waitStages;
+    submitInfo.waitSemaphoreCount = waitSemaphores.size();
+    submitInfo.pWaitSemaphores = waitSemaphores.data();
+    submitInfo.pWaitDstStageMask = waitStages.data();
 
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = vulkanRenderer.getCurrentCommandBuffers();
@@ -288,7 +322,7 @@ void VulkanApp::recordCommandBuffer(uint32_t imageIndex) {
 
         vkCmdBindDescriptorSets(*vulkanRenderer.getCurrentCommandBuffers(), VK_PIPELINE_BIND_POINT_GRAPHICS, *vulkanPipeline.getPipelineLayout(), 0, 1, &(*vulkanDescriptor.getDescriptorSets())[vulkanRenderer.getCurrentFrame()], 0, nullptr);
 
-        vkCmdDrawIndexed(*vulkanRenderer.getCurrentCommandBuffers(), 6*5, 1, 0, 0, 0); // Va faloir changer ça (recup le nb de face a afficher), le 2eme arg c'est le nb d'index
+        vkCmdDrawIndexed(*vulkanRenderer.getCurrentCommandBuffers(), 6*5*10, 1, 0, 0, 0); // Va faloir changer ça (recup le nb de face a afficher), le 2eme arg c'est le nb d'index
 
     vkCmdEndRenderPass(*vulkanRenderer.getCurrentCommandBuffers());
 
@@ -309,12 +343,11 @@ void VulkanApp::recordComputeCommandBuffer() {
 
     vkCmdBindDescriptorSets(*vulkanRenderer.getCurrentComputeCommandBuffers(), VK_PIPELINE_BIND_POINT_COMPUTE, *vulkanCompute.getComputePipelineLayout(), 0, 1, vulkanDescriptor.getComputeDescriptorSets(), 0, nullptr);
 
-    vkCmdDispatch(*vulkanRenderer.getCurrentComputeCommandBuffers(), 1, 1, 1);
+    vkCmdDispatch(*vulkanRenderer.getCurrentComputeCommandBuffers(), 10, 1, 1);
 
     if (vkEndCommandBuffer(*vulkanRenderer.getCurrentComputeCommandBuffers()) != VK_SUCCESS) {
         throw std::runtime_error("failed to record compute command buffer!");
     }
-
 }
 
 void VulkanApp::cleanup() {

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <iostream>
 
 #include "core/vulkan_app.h"
 #include "core/vulkan_device.h"
@@ -15,10 +16,17 @@ void VulkanSwapchain::createSwapChain() {
     VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
     VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
 
-    uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
+    uint32_t imageCount = swapChainSupport.capabilities.minImageCount+1;
     if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
         imageCount = swapChainSupport.capabilities.maxImageCount;
     }
+
+    #ifndef NDEBUG
+    std::cout << "Swapchain Capabilities : " << std::endl;
+    std::cout << "  Max : " << swapChainSupport.capabilities.minImageCount << std::endl;
+    std::cout << "  Min : " << swapChainSupport.capabilities.maxImageCount << std::endl;
+    std::cout << "  Current : " << imageCount << std::endl;
+    #endif
 
     VkSwapchainCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -97,6 +105,9 @@ void VulkanSwapchain::cleanup() {
     for (auto imageView : swapChainImageViews) {
         vkDestroyImageView(vulkanDevice.getDevice(), imageView, nullptr);
     }
+
+    swapChainFramebuffers.clear();
+    swapChainImageViews.clear();
 
     vkDestroySwapchainKHR(vulkanDevice.getDevice(), swapChain, nullptr);
 }

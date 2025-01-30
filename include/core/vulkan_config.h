@@ -11,9 +11,9 @@ const bool enableValidationLayers = false;  // Désactiver les layers en mode re
 const bool enableValidationLayers = true;   // Activer les layers en mode debug
 #endif
 
-const int MAX_FRAMES_IN_FLIGHT = 2;
+const int MAX_FRAMES_IN_FLIGHT = 4;
 
-const int BASE_BUFFER_CAPACITY = 1000000;
+const int BASE_BUFFER_CAPACITY = 10000000;
 
 const int RENDER_DISTANCE = 16;
 const int CHUNK_WIDTH = 16;

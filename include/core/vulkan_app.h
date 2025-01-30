@@ -3,6 +3,7 @@
 
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
+#include <chrono>
 
 #include "core/vulkan_config.h"
 #include "core/vulkan_buffer.h"
@@ -40,11 +41,16 @@ public:
     vulkanPipeline(vulkanDevice, vulkanSwapchain),
     vulkanRenderer(vulkanDevice, vulkanSwapchain, vulkanPipeline),
     vulkanSwapchain(*this, vulkanInstance, vulkanDevice, vulkanRenderer),
-    vulkanTexture(vulkanDevice, vulkanSwapchain, vulkanBuffer) {}
+    vulkanTexture(vulkanDevice, vulkanSwapchain, vulkanBuffer),
+    generated(0), frameCount(0), fps(0.0f) {}
 
 private:
     GLFWwindow* window;
     bool framebufferResized = false;
+    int generated;
+    std::chrono::time_point<std::chrono::high_resolution_clock> lastTime;
+    int frameCount;
+    float fps;
 
     VulkanBuffer vulkanBuffer;
     VulkanCompute vulkanCompute;

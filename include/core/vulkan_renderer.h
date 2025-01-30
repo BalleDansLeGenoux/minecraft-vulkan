@@ -23,6 +23,7 @@ public:
 
     VkCommandPool getCommandPool() const { return commandPool; }
     VkCommandBuffer* getCurrentCommandBuffers() { return &commandBuffers[currentFrame]; }
+    VkCommandBuffer* getCommandBuffer(int index) { return &commandBuffers[index]; }
     VkCommandBuffer* getCurrentComputeCommandBuffers() { return &computeCommandBuffers[currentFrame]; }
     std::vector<VkFence>* getInFlightFences() { return &inFlightFences; }
     std::vector<VkFence>* getComputeInFlightFences() { return &computeInFlightFences; }
