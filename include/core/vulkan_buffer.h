@@ -4,6 +4,8 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
+#include <glm/glm.hpp>
+
 class VulkanDevice;
 class VulkanSwapchain;
 class VulkanPipeline;
@@ -18,7 +20,7 @@ public:
     void createVoxelBuffer();
     void createUpdateVoxelBuffer();
     void createUniformBuffers();
-    void updateUniformBuffer();
+    void updateUniformBuffer(glm::mat4 matrix);
     void cleanupUniform();
     void cleanupVertexIndices();
 

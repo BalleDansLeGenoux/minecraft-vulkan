@@ -22,15 +22,16 @@ public:
     void createImageViews();
     void cleanup();
 
-    SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice pdevice);
-    VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
+    SwapChainSupportDetails    querySwapChainSupport(VkPhysicalDevice pdevice);
+    VkImageView                createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 
-    VkSwapchainKHR getSwapChain() const { return swapChain; }
-    VkFormat getSwapChainImageFormat() const { return swapChainImageFormat; }
-    VkExtent2D getSwapChainExtent() const { return swapChainExtent; }
-    std::vector<VkImageView> getSwapChainImageViews() const { return swapChainImageViews; }
+    VkSwapchainKHR             getSwapChain() const { return swapChain; }
+    VkFormat                   getSwapChainImageFormat() const { return swapChainImageFormat; }
+    VkExtent2D                 getSwapChainExtent() const { return swapChainExtent; }
+    std::vector<VkImageView>   getSwapChainImageViews() const { return swapChainImageViews; }
     std::vector<VkFramebuffer> getSwapChainFramebuffers() const { return swapChainFramebuffers; }
-    VkFramebuffer* getFramebuffers(uint32_t imageIndex) { return &swapChainFramebuffers[imageIndex]; }
+    VkFramebuffer*             getFramebuffers(uint32_t imageIndex) { return &swapChainFramebuffers[imageIndex]; }
+    const float                getAspectRatio() const { return swapChainExtent.width/swapChainExtent.height; }
 
     void addSwapChainFramebuffers(VkFramebuffer pframeBuffer);
 

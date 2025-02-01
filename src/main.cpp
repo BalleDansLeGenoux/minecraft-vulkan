@@ -11,7 +11,9 @@
 
 int main(int argc, char const *argv[])
 {
-    VulkanApp app;
+    VulkanApp app({0.1f, 3.0f, 0.0f}, 45);
+
+    GLFWwindow* window = app.getWindow();
 
     try {
         app.run();

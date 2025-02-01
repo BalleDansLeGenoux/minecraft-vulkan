@@ -5,6 +5,9 @@
 
 #include "core/vulkan_tools.h"
 
+#define NDEBUG
+
+
 #ifdef NDEBUG
 const bool enableValidationLayers = false;  // Désactiver les layers en mode release
 #else
@@ -18,7 +21,5 @@ const int BASE_BUFFER_CAPACITY = 10000000;
 const int RENDER_DISTANCE = 16;
 const int CHUNK_WIDTH = 16;
 const int CHUNK_HEIGHT = 256;
-
-const uint8_t voxel[CHUNK_HEIGHT][CHUNK_WIDTH][CHUNK_WIDTH] = {};
 
 #endif // VULKAN_CONFIG_HPP

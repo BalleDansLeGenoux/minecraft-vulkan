@@ -21,7 +21,7 @@ void VulkanSwapchain::createSwapChain() {
         imageCount = swapChainSupport.capabilities.maxImageCount;
     }
 
-    #ifndef NDEBUG
+    #ifdef DEBUG_SWAPCHAIN
     std::cout << "Swapchain Capabilities : " << std::endl;
     std::cout << "  Max : " << swapChainSupport.capabilities.minImageCount << std::endl;
     std::cout << "  Min : " << swapChainSupport.capabilities.maxImageCount << std::endl;

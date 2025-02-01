@@ -22,6 +22,7 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 
+
 void printVertexBuffer(VulkanBuffer vulkanBuffer, VulkanDevice device, size_t sizeToPrint) {
     // ceci est un test, oui monsieur, un test
 
@@ -105,6 +106,9 @@ void VulkanApp::initWindow() {
     window = glfwCreateWindow(1280, 720, "Minecraft-Vulkan", nullptr, nullptr);
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+    glfwSetKeyCallback(window, key_callback);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 }
 
 void VulkanApp::initVulkan() {
@@ -140,7 +144,9 @@ void VulkanApp::initVulkan() {
 
 void VulkanApp::mainLoop() {
     while (!glfwWindowShouldClose(window)) {
+        updateDeltaTime();
         glfwPollEvents();
+        camera.update(deltaTime);
         drawFrame();
     }
 
@@ -158,83 +164,54 @@ void VulkanApp::run() {
     cleanup();
 }
 
+void VulkanApp::cleanup() {
+    vulkanSwapchain.cleanup();
+    vulkanPipeline.cleanup();
+    vulkanCompute.cleanup();
+    vulkanBuffer.cleanupUniform();
+    vulkanDescriptor.cleanup();
+    vulkanTexture.cleanup();
+    vulkanPipeline.cleanupDescriptorSetLayout();
+    vulkanCompute.cleanupDescriptorSetLayout();
+    vulkanBuffer.cleanupVertexIndices();
+    vulkanRenderer.cleanup();
+    vulkanDevice.cleanup();
+    vulkanInstance.cleanup();
+
+    glfwDestroyWindow(window);
+    glfwTerminate();
+}
+
 void VulkanApp::drawFrame() {
-    // Début du chronométrage (seulement à la première frame)
-    if (frameCount == 0) {
-        lastTime = std::chrono::high_resolution_clock::now();
-    }
-
-    // Incrémenter le compteur de frames
-    frameCount++;
-
-    // Calculer le temps écoulé depuis la dernière mesure
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    float timeElapsed = std::chrono::duration<float>(currentTime - lastTime).count();
-
-    // Si une seconde s'est écoulée, calculer et afficher les FPS
-    if (timeElapsed >= 10.0f) {
-        fps = static_cast<int>(frameCount / timeElapsed); // Calcul des FPS
-        std::cout << "FPS: " << fps << std::endl; // Afficher les FPS dans la console
-
-        // Réinitialiser le compteur et le temps
-        frameCount = 0;
-        lastTime = currentTime;
-    }
-
-    VkSubmitInfo submitInfo{};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    fpsUpdate();
 
     std::vector<VkSemaphore> waitSemaphores = {*vulkanRenderer.getCurrentImageAvailableSemaphores()};
     std::vector<VkPipelineStageFlags> waitStages = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
-    if (!generated) {
-        std::cout << "[DEBUG] Compute !\n";
-        waitSemaphores.push_back(*vulkanRenderer.getCurrentComputeFinishedSemaphores());
-        waitStages.push_back(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
+    if (!generated) computeShader(waitSemaphores, waitStages);
 
-        generated = 1;
-
-        // Compute submission        
-        vkWaitForFences(vulkanDevice.getDevice(), 1, vulkanRenderer.getCurrentComputeInFlightFences(), VK_TRUE, UINT64_MAX);
-        vkResetFences(vulkanDevice.getDevice(), 1, vulkanRenderer.getCurrentComputeInFlightFences());
-
-        vkResetCommandBuffer(*vulkanRenderer.getCurrentComputeCommandBuffers(), /*VkCommandBufferResetFlagBits*/ 0);
-        recordComputeCommandBuffer();
-
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = vulkanRenderer.getCurrentComputeCommandBuffers();
-        submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores = vulkanRenderer.getCurrentComputeFinishedSemaphores();
-
-        if (vkQueueSubmit(*vulkanDevice.getComputeQueue(), 1, &submitInfo, *vulkanRenderer.getCurrentComputeInFlightFences()) != VK_SUCCESS) {
-            throw std::runtime_error("failed to submit compute command buffer!");
-        };
-    }
-
-    // Graphics submission
     vkWaitForFences(vulkanDevice.getDevice(), 1, vulkanRenderer.getCurrentInFlightFences(), VK_TRUE, UINT64_MAX);
 
     uint32_t imageIndex;
     VkResult result = vkAcquireNextImageKHR(vulkanDevice.getDevice(), vulkanSwapchain.getSwapChain(), UINT64_MAX, *vulkanRenderer.getCurrentImageAvailableSemaphores(), VK_NULL_HANDLE, &imageIndex);
 
-    // std::cout << "Image Index : " << imageIndex << std::endl;
-    // std::cout << "Current Frame : " << vulkanRenderer.getCurrentFrame() << std::endl << std::endl;
-
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
         vulkanSwapchain.recreateSwapChain();
-
+        camera.updateProjection(vulkanSwapchain.getAspectRatio());
         return;
     } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
         throw std::runtime_error("failed to acquire swap chain image!");
     }
 
-    vulkanBuffer.updateUniformBuffer();
+    vulkanBuffer.updateUniformBuffer(camera.getProjectionMatrix()*camera.getViewMatrix());
 
     vkResetFences(vulkanDevice.getDevice(), 1, vulkanRenderer.getCurrentInFlightFences());
 
     vkResetCommandBuffer(*vulkanRenderer.getCurrentCommandBuffers(), /*VkCommandBufferResetFlagBits*/ 0);
     recordCommandBuffer(imageIndex);
 
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.waitSemaphoreCount = waitSemaphores.size();
     submitInfo.pWaitSemaphores = waitSemaphores.data();
     submitInfo.pWaitDstStageMask = waitStages.data();
@@ -267,6 +244,7 @@ void VulkanApp::drawFrame() {
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
         framebufferResized = false;
         vulkanSwapchain.recreateSwapChain();
+        camera.updateProjection(vulkanSwapchain.getAspectRatio());
     } else if (result != VK_SUCCESS) {
         throw std::runtime_error("failed to present swap chain image!");
     }
@@ -316,13 +294,12 @@ void VulkanApp::recordCommandBuffer(uint32_t imageIndex) {
 
         VkBuffer vertexBuffers[] = {*vulkanBuffer.getVertexBuffer()};
         VkDeviceSize offsets[] = {0};
+
         vkCmdBindVertexBuffers(*vulkanRenderer.getCurrentCommandBuffers(), 0, 1, vertexBuffers, offsets);
-
         vkCmdBindIndexBuffer(*vulkanRenderer.getCurrentCommandBuffers(), *vulkanBuffer.getIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
-
         vkCmdBindDescriptorSets(*vulkanRenderer.getCurrentCommandBuffers(), VK_PIPELINE_BIND_POINT_GRAPHICS, *vulkanPipeline.getPipelineLayout(), 0, 1, &(*vulkanDescriptor.getDescriptorSets())[vulkanRenderer.getCurrentFrame()], 0, nullptr);
 
-        vkCmdDrawIndexed(*vulkanRenderer.getCurrentCommandBuffers(), 6*5*10, 1, 0, 0, 0); // Va faloir changer ça (recup le nb de face a afficher), le 2eme arg c'est le nb d'index
+        vkCmdDrawIndexed(*vulkanRenderer.getCurrentCommandBuffers(), 6, 1, 0, 0, 0); // Va faloir changer ça (recup le nb de face a afficher), le 2eme arg c'est le nb d'index
 
     vkCmdEndRenderPass(*vulkanRenderer.getCurrentCommandBuffers());
 
@@ -343,32 +320,82 @@ void VulkanApp::recordComputeCommandBuffer() {
 
     vkCmdBindDescriptorSets(*vulkanRenderer.getCurrentComputeCommandBuffers(), VK_PIPELINE_BIND_POINT_COMPUTE, *vulkanCompute.getComputePipelineLayout(), 0, 1, vulkanDescriptor.getComputeDescriptorSets(), 0, nullptr);
 
-    vkCmdDispatch(*vulkanRenderer.getCurrentComputeCommandBuffers(), 10, 1, 1);
+    vkCmdDispatch(*vulkanRenderer.getCurrentComputeCommandBuffers(), 1, 1, 1);
 
     if (vkEndCommandBuffer(*vulkanRenderer.getCurrentComputeCommandBuffers()) != VK_SUCCESS) {
         throw std::runtime_error("failed to record compute command buffer!");
     }
 }
 
-void VulkanApp::cleanup() {
-    vulkanSwapchain.cleanup();
-    vulkanPipeline.cleanup();
-    vulkanCompute.cleanup();
-    vulkanBuffer.cleanupUniform();
-    vulkanDescriptor.cleanup();
-    vulkanTexture.cleanup();
-    vulkanPipeline.cleanupDescriptorSetLayout();
-    vulkanCompute.cleanupDescriptorSetLayout();
-    vulkanBuffer.cleanupVertexIndices();
-    vulkanRenderer.cleanup();
-    vulkanDevice.cleanup();
-    vulkanInstance.cleanup();
-
-    glfwDestroyWindow(window);
-    glfwTerminate();
-}
-
 void VulkanApp::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
     auto app = reinterpret_cast<VulkanApp*>(glfwGetWindowUserPointer(window));
     app->framebufferResized = true;
+}
+
+void VulkanApp::fpsUpdate() {
+    if (frameCount == 0) {
+        lastTime = std::chrono::high_resolution_clock::now();
+    }
+
+    frameCount++;
+
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    float timeElapsed = std::chrono::duration<float>(currentTime - lastTime).count();
+
+    if (timeElapsed >= 10.0f) {
+        fps = static_cast<int>(frameCount / timeElapsed);
+        std::cout << "FPS: " << fps << std::endl;
+
+        frameCount = 0;
+        lastTime = currentTime;
+    }
+}
+
+void VulkanApp::computeShader(std::vector<VkSemaphore>& waitSemaphores, std::vector<VkPipelineStageFlags>& waitStages) {
+    waitSemaphores.push_back(*vulkanRenderer.getCurrentComputeFinishedSemaphores());
+    waitStages.push_back(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
+
+    generated = 1;
+     
+    vkWaitForFences(vulkanDevice.getDevice(), 1, vulkanRenderer.getCurrentComputeInFlightFences(), VK_TRUE, UINT64_MAX);
+    vkResetFences(vulkanDevice.getDevice(), 1, vulkanRenderer.getCurrentComputeInFlightFences());
+
+    vkResetCommandBuffer(*vulkanRenderer.getCurrentComputeCommandBuffers(), 0);
+    recordComputeCommandBuffer();
+
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = vulkanRenderer.getCurrentComputeCommandBuffers();
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = vulkanRenderer.getCurrentComputeFinishedSemaphores();
+
+    if (vkQueueSubmit(*vulkanDevice.getComputeQueue(), 1, &submitInfo, *vulkanRenderer.getCurrentComputeInFlightFences()) != VK_SUCCESS) {
+        throw std::runtime_error("failed to submit compute command buffer!");
+    };
+}
+
+void VulkanApp::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    VulkanApp* app = static_cast<VulkanApp*>(glfwGetWindowUserPointer(window));
+    if (app) {
+        glfwSetWindowShouldClose(window, app->camera.processKeyboard(key, action));
+    }
+}
+
+void VulkanApp::mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+    VulkanApp* app = static_cast<VulkanApp*>(glfwGetWindowUserPointer(window));
+    if (app) {
+        double width = app->vulkanSwapchain.getSwapChainExtent().width;
+        double height = app->vulkanSwapchain.getSwapChainExtent().height;
+
+        app->camera.processMouse(width/2-xpos, height/2-ypos);
+
+        glfwSetCursorPos(window, width/2, height/2);
+    }
+}
+
+void VulkanApp::updateDeltaTime() {
+    float currentFrame = glfwGetTime();
+    deltaTime = currentFrame - lastFrame;
+    lastFrame = currentFrame;
 }
