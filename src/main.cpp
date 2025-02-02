@@ -11,7 +11,22 @@
 
 int main(int argc, char const *argv[])
 {
-    VulkanApp app({0.1f, 3.0f, 0.0f}, 45);
+    std::vector<BlockUpdate> tmp;
+
+    BlockUpdate a;
+
+    for (int x = 0; x < 160; x++) {
+        for (int z = 0; z < 160; z++) {
+            a.chunkPos = glm::ivec4(64, 65, 0, 0);
+            a.blockPos = glm::uvec4(x, 0, z, 0);
+            a.blockID = glm::uvec4(69, 0, 0, 0);
+            tmp.push_back(a);
+        }
+    }
+
+
+
+    VulkanApp app({0.1f, 3.0f, 0.0f}, 45, tmp);
 
     GLFWwindow* window = app.getWindow();
 

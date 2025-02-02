@@ -129,6 +129,7 @@ void main() {
     indexData[3+30*x] = 2+20*x;
     indexData[4+30*x] = 3+20*x;
     indexData[5+30*x] = 0+20*x;
+    
     indexData[6+30*x] = 4+20*x;
     indexData[7+30*x] = 5+20*x;
     indexData[8+30*x] = 6+20*x;

@@ -50,10 +50,17 @@ void VulkanCompute::createDescriptorSetLayout() {
 void VulkanCompute::createComputePipeline() {
     VkShaderModule computeShaderModule = vulkanPipeline.createShaderModule(vulkanPipeline.readFile("res/shaders/comp.spv"));
 
+    VkPushConstantRange pushConstantRange{};
+    pushConstantRange.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+    pushConstantRange.offset = 0;
+    pushConstantRange.size = sizeof(uint32_t);
+
     VkPipelineLayoutCreateInfo layoutInfo{};
     layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     layoutInfo.setLayoutCount = 1;
     layoutInfo.pSetLayouts = &descriptorSetLayout;
+    layoutInfo.pushConstantRangeCount = 1;
+    layoutInfo.pPushConstantRanges = &pushConstantRange;
     vkCreatePipelineLayout(vulkanDevice.getDevice(), &layoutInfo, nullptr, &pipelineLayout);
 
     VkComputePipelineCreateInfo pipelineInfo{};

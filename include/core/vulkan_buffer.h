@@ -6,6 +6,8 @@
 
 #include <glm/glm.hpp>
 
+#include "core/vulkan_tools.h"
+
 class VulkanDevice;
 class VulkanSwapchain;
 class VulkanPipeline;
@@ -24,18 +26,21 @@ public:
     void cleanupUniform();
     void cleanupVertexIndices();
 
-    void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
-    void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-    void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-    VkCommandBuffer beginSingleTimeCommands();
-    void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+    void     createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+    void     createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+    void     copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+    VkCommandBuffer beginSingleTimeCommands();
+    void            endSingleTimeCommands(VkCommandBuffer commandBuffer);
+
+    void updateVoxelsBuffer(std::vector<BlockUpdate>& blockUpdate);
 
     std::vector<VkBuffer> getUniformBuffers() const { return uniformBuffers; }
 
-    const VkBuffer* getVertexBuffer() const { return &vertexBuffer; }
-    const VkBuffer* getIndexBuffer() const { return &indexBuffer; }
-    const VkBuffer* getVoxelBuffer() const { return &voxelBuffer; }
+    const VkBuffer* getVertexBuffer()      const { return &vertexBuffer; }
+    const VkBuffer* getIndexBuffer()       const { return &indexBuffer; }
+    const VkBuffer* getVoxelBuffer()       const { return &voxelBuffer; }
     const VkBuffer* getUpdateVoxelBuffer() const { return &updateVoxelBuffer; }
 
     VulkanBuffer(VulkanDevice& pvulkanDevice, VulkanSwapchain& pvulkanSwapchain, VulkanPipeline& pvulkanPipeline, VulkanRenderer& pvulkanRenderer)

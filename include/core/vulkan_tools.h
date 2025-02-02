@@ -45,9 +45,9 @@ struct UniformBufferObject {
 };
 
 struct BlockUpdate {
-    glm::ivec2 chunkPos;
-    glm::ivec3 blockPos;
-    int blockID;
+    glm::ivec4 chunkPos;
+    glm::uvec4 blockPos;
+    glm::uvec4 blockID;
 };
 
 #endif

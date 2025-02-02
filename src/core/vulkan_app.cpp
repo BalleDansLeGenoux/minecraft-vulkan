@@ -28,7 +28,7 @@ void printVertexBuffer(VulkanBuffer vulkanBuffer, VulkanDevice device, size_t si
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
-    VkDeviceSize bufferSize = sizeof(Vertex) * BASE_BUFFER_CAPACITY;
+    VkDeviceSize bufferSize = sizeof(Vertex) * sizeToPrint;
     // VkDeviceSize bufferSize = sizeof(Vertex) * vertices.size();
     
     vulkanBuffer.createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
@@ -49,9 +49,9 @@ void printVertexBuffer(VulkanBuffer vulkanBuffer, VulkanDevice device, size_t si
 
     // Vérifier les résultats
     for (int i = 0; i < sizeToPrint; ++i) {
-        std::cout << "       pos [" << i << "] = " << resultData[i].pos.x << " | " << resultData[i].pos.y << " | " << resultData[i].pos.z << std::endl;
-        std::cout << "     color [" << i << "] = " << resultData[i].color.x << " | " << resultData[i].color.y << " | " << resultData[i].color.z << std::endl;
-        std::cout << "  texCoord [" << i << "] = " << resultData[i].texCoord.x << " | " << resultData[i].texCoord.y << std::endl << std::endl;
+        std::cout << "  pos [" << i << "] = " << resultData[i].pos.x << " | " << resultData[i].pos.y << " | " << resultData[i].pos.z << std::endl;
+        // std::cout << "     color [" << i << "] = " << resultData[i].color.x << " | " << resultData[i].color.y << " | " << resultData[i].color.z << std::endl;
+        // std::cout << "  texCoord [" << i << "] = " << resultData[i].texCoord.x << " | " << resultData[i].texCoord.y << std::endl << std::endl;
         // std::cout << "Result[" << i << "] = " << resultData[i] << std::endl;
     }
 
@@ -66,7 +66,7 @@ void printIndexBuffer(VulkanBuffer vulkanBuffer, VulkanDevice device, size_t siz
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
-    VkDeviceSize bufferSize = sizeof(uint32_t) * BASE_BUFFER_CAPACITY;
+    VkDeviceSize bufferSize = sizeof(uint32_t) * sizeToPrint;
     // VkDeviceSize bufferSize = sizeof(uint32_t) * indices.size();
     
     vulkanBuffer.createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
@@ -88,6 +88,46 @@ void printIndexBuffer(VulkanBuffer vulkanBuffer, VulkanDevice device, size_t siz
     // Vérifier les résultats
     for (int i = 0; i < sizeToPrint; ++i) {
         std::cout << "  index [" << i << "] = " << resultData[i] << std::endl;
+    }
+
+    vkUnmapMemory(device.getDevice(), stagingBufferMemory);
+    
+    vkDestroyBuffer(device.getDevice(), stagingBuffer, nullptr);
+    vkFreeMemory(device.getDevice(), stagingBufferMemory, nullptr);
+}
+
+void printIndexBufferLikeUpdateBuffer(VulkanBuffer vulkanBuffer, VulkanDevice device, size_t size) {
+    // ceci est un test, oui monsieur, un test
+
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    VkDeviceSize bufferSize = sizeof(BlockUpdate) * size;
+    // VkDeviceSize bufferSize = sizeof(uint32_t) * indices.size();
+    
+    vulkanBuffer.createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+    if (!stagingBuffer || !stagingBufferMemory) {
+        throw std::runtime_error("Failed to create staging buffer!");
+    }
+
+    // Copier le contenu du tampon de sortie vers le tampon de staging
+    vulkanBuffer.copyBuffer(*vulkanBuffer.getUpdateVoxelBuffer(), stagingBuffer, bufferSize);
+
+    // Mapper la mémoire pour accéder aux données
+    void* data;
+    vkMapMemory(device.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+    BlockUpdate* resultData = static_cast<BlockUpdate*>(data);
+
+    std::cout << "Buffer capacity : " << BASE_BUFFER_CAPACITY << std::endl;
+
+    // Vérifier les résultats
+    for (int i = 0; i < size; ++i) {
+        std::cout << "  index [" << i << "].chunkPos.x = " << resultData[i].chunkPos.x << std::endl;
+        std::cout << "  index [" << i << "].chunkPos.y = " << resultData[i].chunkPos.y << std::endl;
+        std::cout << "  index [" << i << "].blockPos.x = " << resultData[i].blockPos.x << std::endl;
+        std::cout << "  index [" << i << "].blockPos.y = " << resultData[i].blockPos.y << std::endl;
+        std::cout << "  index [" << i << "].blockPos.z = " << resultData[i].blockPos.z << std::endl;
+        std::cout << "  index [" << i << "].blockID = " << resultData[i].blockID.x << std::endl;
     }
 
     std::cout << std::endl;
@@ -156,8 +196,14 @@ void VulkanApp::mainLoop() {
 void VulkanApp::run() {
     initWindow();
     initVulkan();
+
+    camera.updateProjection(vulkanSwapchain.getAspectRatio());
     
     mainLoop();
+
+    // printVertexBuffer(vulkanBuffer, vulkanDevice, 8);
+    // printIndexBuffer(vulkanBuffer, vulkanDevice, 12);
+    // printIndexBufferLikeUpdateBuffer(vulkanBuffer, vulkanDevice, 2);
 
     vkDeviceWaitIdle(vulkanDevice.getDevice());
     
@@ -183,8 +229,6 @@ void VulkanApp::cleanup() {
 }
 
 void VulkanApp::drawFrame() {
-    fpsUpdate();
-
     std::vector<VkSemaphore> waitSemaphores = {*vulkanRenderer.getCurrentImageAvailableSemaphores()};
     std::vector<VkPipelineStageFlags> waitStages = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
@@ -268,7 +312,7 @@ void VulkanApp::recordCommandBuffer(uint32_t imageIndex) {
     renderPassInfo.renderArea.extent = vulkanSwapchain.getSwapChainExtent();
 
     std::array<VkClearValue, 2> clearValues{};
-    clearValues[0].color = {{0.0f, 0.0f, 0.5f, 1.0f}};
+    clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
     clearValues[1].depthStencil = {1.0f, 0};
 
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
@@ -299,13 +343,15 @@ void VulkanApp::recordCommandBuffer(uint32_t imageIndex) {
         vkCmdBindIndexBuffer(*vulkanRenderer.getCurrentCommandBuffers(), *vulkanBuffer.getIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
         vkCmdBindDescriptorSets(*vulkanRenderer.getCurrentCommandBuffers(), VK_PIPELINE_BIND_POINT_GRAPHICS, *vulkanPipeline.getPipelineLayout(), 0, 1, &(*vulkanDescriptor.getDescriptorSets())[vulkanRenderer.getCurrentFrame()], 0, nullptr);
 
-        vkCmdDrawIndexed(*vulkanRenderer.getCurrentCommandBuffers(), 6, 1, 0, 0, 0); // Va faloir changer ça (recup le nb de face a afficher), le 2eme arg c'est le nb d'index
+        vkCmdDrawIndexed(*vulkanRenderer.getCurrentCommandBuffers(), 6*blockUpdate.size(), 1, 0, 0, 0); // Va faloir changer ça (recup le nb de face a afficher), le 2eme arg c'est le nb d'index
 
     vkCmdEndRenderPass(*vulkanRenderer.getCurrentCommandBuffers());
 
     if (vkEndCommandBuffer(*vulkanRenderer.getCurrentCommandBuffers()) != VK_SUCCESS) {
         throw std::runtime_error("failed to record command buffer!");
     }
+
+    // blockUpdate.clear();
 }
 
 void VulkanApp::recordComputeCommandBuffer() {
@@ -320,7 +366,12 @@ void VulkanApp::recordComputeCommandBuffer() {
 
     vkCmdBindDescriptorSets(*vulkanRenderer.getCurrentComputeCommandBuffers(), VK_PIPELINE_BIND_POINT_COMPUTE, *vulkanCompute.getComputePipelineLayout(), 0, 1, vulkanDescriptor.getComputeDescriptorSets(), 0, nullptr);
 
-    vkCmdDispatch(*vulkanRenderer.getCurrentComputeCommandBuffers(), 1, 1, 1);
+    uint32_t bufferSize = blockUpdate.size();
+    vkCmdPushConstants(*vulkanRenderer.getCurrentComputeCommandBuffers(), *vulkanCompute.getComputePipelineLayout(), VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &bufferSize);
+
+    vulkanBuffer.updateVoxelsBuffer(blockUpdate);
+
+    vkCmdDispatch(*vulkanRenderer.getCurrentComputeCommandBuffers(), blockUpdate.size(), 1, 1);
 
     if (vkEndCommandBuffer(*vulkanRenderer.getCurrentComputeCommandBuffers()) != VK_SUCCESS) {
         throw std::runtime_error("failed to record compute command buffer!");
@@ -330,25 +381,6 @@ void VulkanApp::recordComputeCommandBuffer() {
 void VulkanApp::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
     auto app = reinterpret_cast<VulkanApp*>(glfwGetWindowUserPointer(window));
     app->framebufferResized = true;
-}
-
-void VulkanApp::fpsUpdate() {
-    if (frameCount == 0) {
-        lastTime = std::chrono::high_resolution_clock::now();
-    }
-
-    frameCount++;
-
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    float timeElapsed = std::chrono::duration<float>(currentTime - lastTime).count();
-
-    if (timeElapsed >= 10.0f) {
-        fps = static_cast<int>(frameCount / timeElapsed);
-        std::cout << "FPS: " << fps << std::endl;
-
-        frameCount = 0;
-        lastTime = currentTime;
-    }
 }
 
 void VulkanApp::computeShader(std::vector<VkSemaphore>& waitSemaphores, std::vector<VkPipelineStageFlags>& waitStages) {
@@ -377,9 +409,26 @@ void VulkanApp::computeShader(std::vector<VkSemaphore>& waitSemaphores, std::vec
 
 void VulkanApp::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     VulkanApp* app = static_cast<VulkanApp*>(glfwGetWindowUserPointer(window));
-    if (app) {
-        glfwSetWindowShouldClose(window, app->camera.processKeyboard(key, action));
+
+    if (!app) return;
+
+    int code = app->camera.processKeyboard(key, action);
+
+    if (!code) return;
+
+    switch (code)
+    {
+    case 1:
+        glfwSetWindowShouldClose(window, true);
+        break;
+
+    case 2:
+        std::cout << "[FPS] " << 1.0f/app->getDeltaTime() << std::endl;
+    
+    default:
+        break;
     }
+
 }
 
 void VulkanApp::mouse_callback(GLFWwindow* window, double xpos, double ypos) {

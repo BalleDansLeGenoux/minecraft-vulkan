@@ -1,5 +1,9 @@
 #version 450
 
+layout(push_constant) uniform PushConstants {
+    uint updateVoxelsSize;
+} pc;
+
 struct Vertex {
     vec3 pos;
     vec3 color;
@@ -7,9 +11,9 @@ struct Vertex {
 };
 
 struct BlockUpdate {
-    ivec2 chunkPos;
-    uvec3 blockPos;
-    uint blockID;
+    ivec4 chunkPos;
+    uvec4 blockPos;
+    uvec4 blockID;
 };
 
 layout(std430, binding = 0) buffer BlockBuffer {
@@ -29,19 +33,60 @@ layout(std430, binding = 3) buffer IndexBuffer {
 };
 
 void main() {
-    vertexData[0].pos = vec3(-0.5f, 0.5f, -0.5f);
+    uint index = gl_GlobalInvocationID.x;
+
+    uvec3 pos = updates[index].blockPos.xyz;
+
+    vertexData[index*4+0].pos = vec3(pos.x, pos.y+1.0f, pos.z);
+    vertexData[index*4+0].color = vec3(0.9f, 0.9f, 0.9f);
+    vertexData[index*4+0].texCoord = vec2(0.0f, 0.0f);
+
+    vertexData[index*4+1].pos = vec3(pos.x+1.0f, pos.y+1.0f, pos.z);
+    vertexData[index*4+1].color = vec3(0.9f, 0.9f, 0.9f);
+    vertexData[index*4+1].texCoord = vec2(1.0f/16, 0.0f);
+
+    vertexData[index*4+2].pos = vec3(pos.x+1.0f, pos.y+1.0f, pos.z+1.0f);
+    vertexData[index*4+2].color = vec3(0.9f, 0.9f, 0.9f);
+    vertexData[index*4+2].texCoord = vec2(1.0f/16, 1.0f/16);
+
+    vertexData[index*4+3].pos = vec3(pos.x, pos.y+1.0f, pos.z+1.0f);
+    vertexData[index*4+3].color = vec3(0.9f, 0.9f, 0.9f);
+    vertexData[index*4+3].texCoord = vec2(0.0f, 1.0f/16);
+
+    indexData[index*6+0] = index*4+0;
+    indexData[index*6+1] = index*4+1;
+    indexData[index*6+2] = index*4+2;
+    indexData[index*6+3] = index*4+2;
+    indexData[index*6+4] = index*4+3;
+    indexData[index*6+5] = index*4+0;
+
+
+
+    /*
+    ivec2 chunkPos = updates[0].chunkPos.xy;
+    uvec3 pos = updates[0].blockPos.xyz;
+    uint id = updates[0].blockID.x;
+
+    int cx = chunkPos.x;
+    int cy = chunkPos.y;
+
+    uint x = pos.x;
+    uint y = pos.y;
+    uint z = pos.z;
+
+    vertexData[0].pos = vec3(float(x), float(y)+1.0f, float(z));
     vertexData[0].color = vec3(0.9f, 0.9f, 0.9f);
     vertexData[0].texCoord = vec2(0.0f, 0.0f);
 
-    vertexData[1].pos = vec3(0.5f, 0.5f, -0.5f);
+    vertexData[1].pos = vec3(float(x)+1.0f, float(y)+1.0f, float(z));
     vertexData[1].color = vec3(0.9f, 0.9f, 0.9f);
     vertexData[1].texCoord = vec2(1.0f/16, 0.0f);
 
-    vertexData[2].pos = vec3(0.5f, 0.5f, 0.5f);
+    vertexData[2].pos = vec3(float(x)+1.0f, float(y)+1.0f, float(z)+1.0f);
     vertexData[2].color = vec3(0.9f, 0.9f, 0.9f);
     vertexData[2].texCoord = vec2(1.0f/16, 1.0f/16);
 
-    vertexData[3].pos = vec3(-0.5f, 0.5f, 0.5f);
+    vertexData[3].pos = vec3(float(x), float(y)+1.0f, float(z)+1.0f);
     vertexData[3].color = vec3(0.9f, 0.9f, 0.9f);
     vertexData[3].texCoord = vec2(0.0f, 1.0f/16);
 
@@ -51,4 +96,68 @@ void main() {
     indexData[3] = 2;
     indexData[4] = 3;
     indexData[5] = 0;
+
+
+    chunkPos = updates[1].chunkPos.xy;
+    pos = updates[1].blockPos.xyz;
+    id = updates[1].blockID.x;
+
+    cx = chunkPos.x;
+    cy = chunkPos.y;
+
+    x = pos.x;
+    y = pos.y;
+    z = pos.z;
+
+    vertexData[4].pos = vec3(float(x), float(y)+1.0f, float(z));
+    vertexData[4].color = vec3(0.9f, 0.9f, 0.9f);
+    vertexData[4].texCoord = vec2(0.0f, 0.0f);
+
+    vertexData[5].pos = vec3(float(x)+1.0f, float(y)+1.0f, float(z));
+    vertexData[5].color = vec3(0.9f, 0.9f, 0.9f);
+    vertexData[5].texCoord = vec2(1.0f/16, 0.0f);
+
+    vertexData[6].pos = vec3(float(x)+1.0f, float(y)+1.0f, float(z)+1.0f);
+    vertexData[6].color = vec3(0.9f, 0.9f, 0.9f);
+    vertexData[6].texCoord = vec2(1.0f/16, 1.0f/16);
+
+    vertexData[7].pos = vec3(float(x), float(y)+1.0f, float(z)+1.0f);
+    vertexData[7].color = vec3(0.9f, 0.9f, 0.9f);
+    vertexData[7].texCoord = vec2(0.0f, 1.0f/16);
+
+    indexData[6] = 4;
+    indexData[7] = 5;
+    indexData[8] = 6;
+    indexData[9] = 6;
+    indexData[10] = 7;
+    indexData[11] = 4;
+
+
+    for (int index = 0; index < pc.updateVoxelsSize; index++) {
+        uvec3 pos = updates[index].blockPos;
+
+        vertexData[index*4+0].pos = vec3(pos.x, pos.y+1.0f, pos.z);
+        vertexData[index*4+0].color = vec3(0.9f, 0.9f, 0.9f);
+        vertexData[index*4+0].texCoord = vec2(0.0f, 0.0f);
+
+        vertexData[index*4+1].pos = vec3(pos.x+1.0f, pos.y+1.0f, pos.z);
+        vertexData[index*4+1].color = vec3(0.9f, 0.9f, 0.9f);
+        vertexData[index*4+1].texCoord = vec2(1.0f/16, 0.0f);
+
+        vertexData[index*4+2].pos = vec3(pos.x+1.0f, pos.y+1.0f, pos.z+1.0f);
+        vertexData[index*4+2].color = vec3(0.9f, 0.9f, 0.9f);
+        vertexData[index*4+2].texCoord = vec2(1.0f/16, 1.0f/16);
+
+        vertexData[index*4+3].pos = vec3(pos.x, pos.y+1.0f, pos.z+1.0f);
+        vertexData[index*4+3].color = vec3(0.9f, 0.9f, 0.9f);
+        vertexData[index*4+3].texCoord = vec2(0.0f, 1.0f/16);
+
+        indexData[index*6+0] = index*4+0;
+        indexData[index*6+1] = index*4+1;
+        indexData[index*6+2] = index*4+2;
+        indexData[index*6+3] = index*4+2;
+        indexData[index*6+4] = index*4+3;
+        indexData[index*6+5] = index*4+0;
+    }
+    */
 }

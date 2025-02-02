@@ -31,9 +31,11 @@ void VulkanBuffer::createVoxelBuffer() {
 }
 
 void VulkanBuffer::createUpdateVoxelBuffer() {
-    VkDeviceSize bufferSize = sizeof(BlockUpdate) * CHUNK_HEIGHT * CHUNK_WIDTH * CHUNK_WIDTH * RENDER_DISTANCE * RENDER_DISTANCE * 4;
+    VkDeviceSize bufferSize = BASE_BUFFER_CAPACITY;
 
-    createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, updateVoxelBuffer, updateVoxelBufferMemory);
+    VkDeviceSize alignedBufferSize = (bufferSize + (alignof(BlockUpdate) - 1)) & ~(alignof(BlockUpdate) - 1);
+
+    createBuffer(alignedBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, updateVoxelBuffer, updateVoxelBufferMemory);
 }
 
 void VulkanBuffer::createUniformBuffers() {
@@ -188,14 +190,34 @@ void VulkanBuffer::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
 }
 
 uint32_t VulkanBuffer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
-        VkPhysicalDeviceMemoryProperties memProperties;
-        vkGetPhysicalDeviceMemoryProperties(vulkanDevice.getPhysicalDevice(), &memProperties);
+    VkPhysicalDeviceMemoryProperties memProperties;
+    vkGetPhysicalDeviceMemoryProperties(vulkanDevice.getPhysicalDevice(), &memProperties);
 
-        for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-            if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-                return i;
-            }
+    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+            return i;
         }
-
-        throw std::runtime_error("failed to find suitable memory type!");
     }
+
+    throw std::runtime_error("failed to find suitable memory type!");
+}
+
+void VulkanBuffer::updateVoxelsBuffer(std::vector<BlockUpdate>& blockUpdate) {
+    VkDeviceSize bufferSize = sizeof(BlockUpdate) * blockUpdate.size();
+
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+    void* data;
+    vkMapMemory(vulkanDevice.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+        memcpy(data, blockUpdate.data(), (size_t) bufferSize);
+    vkUnmapMemory(vulkanDevice.getDevice(), stagingBufferMemory);
+
+    copyBuffer(stagingBuffer, updateVoxelBuffer, bufferSize);
+
+    vkDestroyBuffer(vulkanDevice.getDevice(), stagingBuffer, nullptr);
+    vkFreeMemory(vulkanDevice.getDevice(), stagingBufferMemory, nullptr);
+
+    // blockUpdate.clear();
+}

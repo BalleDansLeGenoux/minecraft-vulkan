@@ -5,8 +5,7 @@
 
 #include "core/vulkan_tools.h"
 
-#define NDEBUG
-
+// #define NDEBUG
 
 #ifdef NDEBUG
 const bool enableValidationLayers = false;  // Désactiver les layers en mode release
@@ -17,6 +16,7 @@ const bool enableValidationLayers = true;   // Activer les layers en mode debug
 const int MAX_FRAMES_IN_FLIGHT = 4;
 
 const int BASE_BUFFER_CAPACITY = 10000000;
+const int UPDATE_BUFFER_CAPACITY = sizeof(BlockUpdate)*200000;
 
 const int RENDER_DISTANCE = 16;
 const int CHUNK_WIDTH = 16;

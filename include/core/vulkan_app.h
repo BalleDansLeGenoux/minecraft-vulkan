@@ -34,7 +34,7 @@ public:
     GLFWwindow* getWindow() const { return window; }
     const float getDeltaTime() const {return deltaTime; }
 
-    VulkanApp(glm::vec3 posCamera, float fov) :
+    VulkanApp(glm::vec3 posCamera, float fov, std::vector<BlockUpdate>& pblockUpdate) :
     vulkanBuffer(vulkanDevice, vulkanSwapchain, vulkanPipeline, vulkanRenderer),
     vulkanCompute(vulkanDevice, vulkanPipeline, vulkanDescriptor, vulkanRenderer),
     vulkanDescriptor(vulkanDevice, vulkanPipeline, vulkanBuffer, vulkanTexture, vulkanCompute, vulkanRenderer),
@@ -44,8 +44,7 @@ public:
     vulkanRenderer(vulkanDevice, vulkanSwapchain, vulkanPipeline),
     vulkanSwapchain(*this, vulkanInstance, vulkanDevice, vulkanRenderer),
     vulkanTexture(vulkanDevice, vulkanSwapchain, vulkanBuffer),
-    generated(0), frameCount(0), fps(0.0f),
-    camera(posCamera, fov, 1280/720) {}
+    generated(0), camera(posCamera, fov, 0), blockUpdate(pblockUpdate) {}
 
 private:
     GLFWwindow* window;
@@ -55,14 +54,9 @@ private:
     bool framebufferResized = false;
     int generated;
 
-    std::chrono::time_point<std::chrono::high_resolution_clock> lastTime;
-    int frameCount;
-    float fps;
-
     float deltaTime = 0;
     float lastFrame = 0;
 
-    void fpsUpdate();
     void computeShader(std::vector<VkSemaphore>& waitSemaphores, std::vector<VkPipelineStageFlags>& waitStages);
 
     static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -70,15 +64,17 @@ private:
 
     void updateDeltaTime();
 
-    VulkanBuffer vulkanBuffer;
-    VulkanCompute vulkanCompute;
+    VulkanBuffer     vulkanBuffer;
+    VulkanCompute    vulkanCompute;
     VulkanDescriptor vulkanDescriptor;
-    VulkanDevice vulkanDevice;
-    VulkanInstance vulkanInstance;
-    VulkanPipeline vulkanPipeline;
-    VulkanRenderer vulkanRenderer;
-    VulkanSwapchain vulkanSwapchain;
-    VulkanTexture vulkanTexture;
+    VulkanDevice     vulkanDevice;
+    VulkanInstance   vulkanInstance;
+    VulkanPipeline   vulkanPipeline;
+    VulkanRenderer   vulkanRenderer;
+    VulkanSwapchain  vulkanSwapchain;
+    VulkanTexture    vulkanTexture;
+
+    std::vector<BlockUpdate>& blockUpdate;
 };
 
 #endif // VULKAN_APP_HPP

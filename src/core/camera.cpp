@@ -25,10 +25,12 @@ void Camera::update(float deltaTime) {
     glm::vec3 right = glm::normalize(glm::cross(front, worldUp));
     glm::vec3 forward = glm::normalize(glm::vec3(front.x, 0.0f, front.z));
 
-    position += forward * axeZ * velocity;
-    position += worldUp * axeY * velocity;
-    position += right * axeX * velocity;
+    glm::vec3 moveDirection = forward * axeZ + worldUp * axeY + right * axeX;
 
+    if (glm::length(moveDirection) > 0.0f)
+        moveDirection = glm::normalize(moveDirection);
+
+    position += moveDirection * velocity;
     updateViewMatrix();
 }
 
@@ -47,7 +49,11 @@ int Camera::processKeyboard(int key, int action) {
     if (key == GLFW_KEY_C && action == GLFW_RELEASE) axeY--;
     if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE) axeY++;
 
-    return key == GLFW_KEY_ESCAPE;
+    if (action != GLFW_PRESS)   return 0;
+    if (key == GLFW_KEY_ESCAPE) return 1;
+    if (key == GLFW_KEY_F)      return 2;
+
+    return 0;
 }
 
 void Camera::processMouse(float offsetX, float offsetY) {
@@ -62,11 +68,11 @@ void Camera::processMouse(float offsetX, float offsetY) {
 }
 
 void Camera::updateViewMatrix() {
-    glm::vec3 direction;
-    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    direction.y = sin(glm::radians(pitch));
-    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    front = glm::normalize(direction);
+    front = glm::normalize(glm::vec3(
+        cos(glm::radians(yaw)) * cos(glm::radians(pitch)),
+        sin(glm::radians(pitch)),
+        sin(glm::radians(yaw)) * cos(glm::radians(pitch))
+    ));
 
     viewMatrix = glm::lookAt(position, position + front, worldUp);
 }
