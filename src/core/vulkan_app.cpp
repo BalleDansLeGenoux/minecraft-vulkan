@@ -201,9 +201,9 @@ void VulkanApp::run() {
     
     mainLoop();
 
-    // printVertexBuffer(vulkanBuffer, vulkanDevice, 8);
+    // printVertexBuffer(vulkanBuffer, vulkanDevice, 4*200*200);
     // printIndexBuffer(vulkanBuffer, vulkanDevice, 12);
-    // printIndexBufferLikeUpdateBuffer(vulkanBuffer, vulkanDevice, 2);
+    // printIndexBufferLikeUpdateBuffer(vulkanBuffer, vulkanDevice, 1);
 
     vkDeviceWaitIdle(vulkanDevice.getDevice());
     

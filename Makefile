@@ -30,9 +30,9 @@ lines:
 	find $(SRC_DIR) $(INCLUDE_DIR) -name '*.cpp' -o -name '*.h' | xargs wc -l | cat
 
 shaders:
-	glslc res/shaders/shader.comp -o res/shaders/comp.spv
-	glslc res/shaders/shader.vert -o res/shaders/vert.spv
-	glslc res/shaders/shader.frag -o res/shaders/frag.spv
+	glslc -fshader-stage=comp res/shaders/comp.glsl -o res/shaders/comp.spv
+	glslc -fshader-stage=vert res/shaders/vert.glsl -o res/shaders/vert.spv
+	glslc -fshader-stage=frag res/shaders/frag.glsl -o res/shaders/frag.spv
 
 debug: all
 	gdb $(BUILD_DIR)/$(TARGET)
