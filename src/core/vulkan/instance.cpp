@@ -1,9 +1,9 @@
-#include "core/vulkan_instance.h"
+#include "core/vulkan/instance.h"
 
 #include <iostream>
 #include <cstring>
 
-#include "core/vulkan_app.h"
+#include "core/vulkan/config.h"
 
 const std::vector<const char*> validationLayers = {
     "VK_LAYER_KHRONOS_validation"
@@ -25,7 +25,7 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
     }
 }
 
-void VulkanInstance::createInstance() {
+void Instance::createInstance() {
 if (enableValidationLayers && !checkValidationLayerSupport()) {
         throw std::runtime_error("validation layers requested, but not available!");
     }
@@ -64,21 +64,21 @@ if (enableValidationLayers && !checkValidationLayerSupport()) {
     }
 }
 
-void VulkanInstance::createSurface() {
+void Instance::createSurface(GLFWwindow* window) {
     if (instance == VK_NULL_HANDLE) {
         throw std::runtime_error("Vulkan instance is null!");
     }
 
-    if (vulkanApp.getWindow() == nullptr) {
+    if (window == nullptr) {
         throw std::runtime_error("GLFW window is null!");
     }
 
-    if (glfwCreateWindowSurface(instance, vulkanApp.getWindow(), nullptr, &surface) != VK_SUCCESS) {
+    if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
         throw std::runtime_error("failed to create window surface!");
     }
 }
 
-void VulkanInstance::setupDebugMessenger() {
+void Instance::setupDebugMessenger() {
     if (!enableValidationLayers) return;
 
     VkDebugUtilsMessengerCreateInfoEXT createInfo;
@@ -90,7 +90,7 @@ void VulkanInstance::setupDebugMessenger() {
     
 }
 
-std::vector<const char*> VulkanInstance::getRequiredExtensions() {
+std::vector<const char*> Instance::getRequiredExtensions() {
     uint32_t glfwExtensionCount = 0;
     const char** glfwExtensions;
     glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -104,7 +104,7 @@ std::vector<const char*> VulkanInstance::getRequiredExtensions() {
     return extensions;
 }
 
-bool VulkanInstance::checkValidationLayerSupport() {
+bool Instance::checkValidationLayerSupport() {
     uint32_t layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -129,7 +129,7 @@ bool VulkanInstance::checkValidationLayerSupport() {
     return true;
 }
 
-void VulkanInstance::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
+void Instance::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
     createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -137,13 +137,13 @@ void VulkanInstance::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreat
     createInfo.pfnUserCallback = debugCallback;
 }
 
-VKAPI_ATTR VkBool32 VKAPI_CALL VulkanInstance::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
+VKAPI_ATTR VkBool32 VKAPI_CALL Instance::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
     std::cerr << "validation layer -> " << pCallbackData->pMessage << std::endl;
 
     return VK_FALSE;
 }
 
-void VulkanInstance::cleanup() {
+void Instance::cleanup() {
     if (enableValidationLayers) {
         DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
     }

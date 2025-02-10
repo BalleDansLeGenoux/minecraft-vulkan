@@ -1,15 +1,15 @@
-#include "core/vulkan_compute.h"
+#include "core/vulkan/compute_pipeline.h"
 
 #include <iostream>
 #include <array>
 #include <string>
 
-#include "core/vulkan_device.h"
-#include "core/vulkan_pipeline.h"
-#include "core/vulkan_descriptor.h"
+#include "core/vulkan/device.h"
+#include "core/vulkan/graphic_pipeline.h"
+#include "core/vulkan/descriptor.h"
 
 
-void VulkanCompute::createDescriptorSetLayout() {
+void ComputePipeline::createDescriptorSetLayout() {
     VkDescriptorSetLayoutBinding voxelBinding{};
     voxelBinding.binding = 0;
     voxelBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -42,13 +42,13 @@ void VulkanCompute::createDescriptorSetLayout() {
     layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
     layoutInfo.pBindings = bindings.data();
 
-    if (vkCreateDescriptorSetLayout(vulkanDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
+    if (vkCreateDescriptorSetLayout(Device::get().getDevice(), &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
         throw std::runtime_error("failed to create compute descriptor set layout!");
     }
 }
 
-void VulkanCompute::createComputePipeline() {
-    VkShaderModule computeShaderModule = vulkanPipeline.createShaderModule(vulkanPipeline.readFile("res/shaders/comp.spv"));
+void ComputePipeline::createComputePipeline() {
+    VkShaderModule computeShaderModule = GraphicPipeline::get().createShaderModule(GraphicPipeline::get().readFile("res/shaders/comp.spv"));
 
     VkPushConstantRange pushConstantRange{};
     pushConstantRange.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
@@ -61,65 +61,59 @@ void VulkanCompute::createComputePipeline() {
     layoutInfo.pSetLayouts = &descriptorSetLayout;
     layoutInfo.pushConstantRangeCount = 1;
     layoutInfo.pPushConstantRanges = &pushConstantRange;
-    vkCreatePipelineLayout(vulkanDevice.getDevice(), &layoutInfo, nullptr, &pipelineLayout);
+    vkCreatePipelineLayout(Device::get().getDevice(), &layoutInfo, nullptr, &pipelineLayout);
 
     VkComputePipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
     pipelineInfo.stage = createShaderStage(computeShaderModule, VK_SHADER_STAGE_COMPUTE_BIT);
     pipelineInfo.layout = pipelineLayout;
-    vkCreateComputePipelines(vulkanDevice.getDevice(), nullptr, 1, &pipelineInfo, nullptr, &computePipeline);
+    vkCreateComputePipelines(Device::get().getDevice(), nullptr, 1, &pipelineInfo, nullptr, &computePipeline);
 
-    vkDestroyShaderModule(vulkanDevice.getDevice(), computeShaderModule, nullptr);
+    vkDestroyShaderModule(Device::get().getDevice(), computeShaderModule, nullptr);
 }
 
-void VulkanCompute::dispatchCompute() {// Étape 1 : Commencer l'enregistrement du command buffer
+void ComputePipeline::dispatchCompute() {
     VkCommandBufferBeginInfo beginInfo = {};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 
-    if (vkBeginCommandBuffer(*vulkanRenderer.getCurrentCommandBuffers(), &beginInfo) != VK_SUCCESS) {
+    if (vkBeginCommandBuffer(Renderer::get().getCurrentCommandBuffers(), &beginInfo) != VK_SUCCESS) {
         throw std::runtime_error("failed to begin recording command buffer for compute!");
     }
 
-    // Étape 2 : Lier le pipeline de compute
-    vkCmdBindPipeline(*vulkanRenderer.getCurrentCommandBuffers(), VK_PIPELINE_BIND_POINT_COMPUTE, computePipeline);
+    vkCmdBindPipeline(Renderer::get().getCurrentCommandBuffers(), VK_PIPELINE_BIND_POINT_COMPUTE, computePipeline);
 
-    // Étape 3 : Lier les descripteurs nécessaires (buffers, images, etc.)
-    vkCmdBindDescriptorSets(*vulkanRenderer.getCurrentCommandBuffers(), VK_PIPELINE_BIND_POINT_COMPUTE, pipelineLayout, 0, 1, vulkanDescriptor.getComputeDescriptorSets(), 0, nullptr);
+    vkCmdBindDescriptorSets(Renderer::get().getCurrentCommandBuffers(), VK_PIPELINE_BIND_POINT_COMPUTE, pipelineLayout, 0, 1, &Descriptor::get().getComputeDescriptorSets(), 0, nullptr);
 
-    // Étape 4 : Dispatcher le compute shader (définir le nombre de workgroups à exécuter)
-    vkCmdDispatch(*vulkanRenderer.getCurrentCommandBuffers(), 1, 1, 1);  // Dispatche 1 workgroup dans chaque dimension
+    vkCmdDispatch(Renderer::get().getCurrentCommandBuffers(), 1, 1, 1);
 
-    // Étape 5 : Terminer l'enregistrement du command buffer
-    if (vkEndCommandBuffer(*vulkanRenderer.getCurrentCommandBuffers()) != VK_SUCCESS) {
+    if (vkEndCommandBuffer(Renderer::get().getCurrentCommandBuffers()) != VK_SUCCESS) {
         throw std::runtime_error("failed to record command buffer for compute!");
     }
 
-    // Étape 6 : Soumettre le command buffer à la compute queue
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = vulkanRenderer.getCurrentCommandBuffers();
+    submitInfo.pCommandBuffers = &Renderer::get().getCurrentCommandBuffers();
 
-    if (vkQueueSubmit(*vulkanDevice.getComputeQueue(), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+    if (vkQueueSubmit(Device::get().getComputeQueue(), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
         throw std::runtime_error("failed to submit compute command buffer!");
     }
 
-    // Étape 7 : Attendre la fin de l'exécution du compute shader
-    vkQueueWaitIdle(*vulkanDevice.getComputeQueue());
+    vkQueueWaitIdle(Device::get().getComputeQueue());
 }
 
-void VulkanCompute::cleanup() {
-    vkDestroyPipeline(vulkanDevice.getDevice(), computePipeline, nullptr);
-    vkDestroyPipelineLayout(vulkanDevice.getDevice(), pipelineLayout, nullptr);
+void ComputePipeline::cleanup() {
+    vkDestroyPipeline(Device::get().getDevice(), computePipeline, nullptr);
+    vkDestroyPipelineLayout(Device::get().getDevice(), pipelineLayout, nullptr);
 }
 
-void VulkanCompute::cleanupDescriptorSetLayout() {
-    vkDestroyDescriptorSetLayout(vulkanDevice.getDevice(), descriptorSetLayout, nullptr);
+void ComputePipeline::cleanupDescriptorSetLayout() {
+    vkDestroyDescriptorSetLayout(Device::get().getDevice(), descriptorSetLayout, nullptr);
 }
 
-VkPipelineShaderStageCreateInfo VulkanCompute::createShaderStage(VkShaderModule shaderModule, VkShaderStageFlagBits stage) {
+VkPipelineShaderStageCreateInfo ComputePipeline::createShaderStage(VkShaderModule shaderModule, VkShaderStageFlagBits stage) {
     VkPipelineShaderStageCreateInfo shaderStageInfo{};
     shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderStageInfo.stage = stage;

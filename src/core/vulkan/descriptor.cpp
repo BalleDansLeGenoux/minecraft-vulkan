@@ -1,15 +1,18 @@
-#include "core/vulkan_descriptor.h"
+#include "core/vulkan/descriptor.h"
 
 #include <iostream>
+#include <array>
 
-#include "core/vulkan_config.h"
-#include "core/vulkan_buffer.h"
-#include "core/vulkan_device.h"
-#include "core/vulkan_pipeline.h"
-#include "core/vulkan_texture.h"
-#include "core/vulkan_compute.h"
+#include "core/vulkan/config.h"
+#include "core/vulkan/buffer.h"
+#include "core/vulkan/device.h"
+#include "core/vulkan/graphic_pipeline.h"
+#include "core/vulkan/texture.h"
+#include "core/vulkan/compute_pipeline.h"
 
-void VulkanDescriptor::createDescriptorPool() {
+#include "core/vulkan/uniform_buffer.h"
+
+void Descriptor::createDescriptorPool() {
     std::array<VkDescriptorPoolSize, 3> poolSizes{};
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT)*4;
@@ -24,14 +27,14 @@ void VulkanDescriptor::createDescriptorPool() {
     poolInfo.pPoolSizes = poolSizes.data();
     poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT)*4;
 
-    if (vkCreateDescriptorPool(vulkanDevice.getDevice(), &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
+    if (vkCreateDescriptorPool(Device::get().getDevice(), &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
         throw std::runtime_error("failed to create descriptor pool!");
     }
 }
 
-void VulkanDescriptor::createDescriptorSets() {
-    std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, vulkanPipeline.getDescriptorSetLayout());
-    std::vector<VkDescriptorSetLayout> computeLayouts(MAX_FRAMES_IN_FLIGHT, vulkanCompute.getDescriptorSetLayout());
+void Descriptor::createDescriptorSets() {
+    std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, GraphicPipeline::get().getDescriptorSetLayout());
+    std::vector<VkDescriptorSetLayout> computeLayouts(MAX_FRAMES_IN_FLIGHT, ComputePipeline::get().getDescriptorSetLayout());
 
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -40,26 +43,26 @@ void VulkanDescriptor::createDescriptorSets() {
 
     allocInfo.pSetLayouts = layouts.data();
     descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
-    if (vkAllocateDescriptorSets(vulkanDevice.getDevice(), &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
+    if (vkAllocateDescriptorSets(Device::get().getDevice(), &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate descriptor sets!");
     }
 
     allocInfo.pSetLayouts = computeLayouts.data();
     computeDescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
-    if (vkAllocateDescriptorSets(vulkanDevice.getDevice(), &allocInfo, computeDescriptorSets.data()) != VK_SUCCESS) {
+    if (vkAllocateDescriptorSets(Device::get().getDevice(), &allocInfo, computeDescriptorSets.data()) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate descriptor sets for compute!");
     }
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = vulkanBuffer.getUniformBuffers()[i];
+        // bufferInfo.buffer = vulkanBuffer.getUniformBuffers()[i];
         bufferInfo.offset = 0;
         bufferInfo.range = sizeof(UniformBufferObject);
 
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo.imageView = vulkanTexture.getTextureImageView();
-        imageInfo.sampler = vulkanTexture.getTextureSampler();
+        imageInfo.imageView = Texture::get().getTextureImageView();
+        imageInfo.sampler = Texture::get().getTextureSampler();
 
         std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
@@ -79,7 +82,7 @@ void VulkanDescriptor::createDescriptorSets() {
         descriptorWrites[1].descriptorCount = 1;
         descriptorWrites[1].pImageInfo = &imageInfo;
 
-        vkUpdateDescriptorSets(vulkanDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+        vkUpdateDescriptorSets(Device::get().getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 
         if (descriptorSets[i] == VK_NULL_HANDLE) {
             throw std::runtime_error(std::string("Descriptor set allocation failed for index: ")+std::to_string(i));
@@ -88,22 +91,22 @@ void VulkanDescriptor::createDescriptorSets() {
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         VkDescriptorBufferInfo voxelBufferInfo{};
-        voxelBufferInfo.buffer = *vulkanBuffer.getVoxelBuffer();
+        // voxelBufferInfo.buffer = *vulkanBuffer.getVoxelBuffer();
         voxelBufferInfo.offset = 0;
         voxelBufferInfo.range = VK_WHOLE_SIZE;
 
         VkDescriptorBufferInfo updateBufferInfo{};
-        updateBufferInfo.buffer = *vulkanBuffer.getUpdateVoxelBuffer();
+        // updateBufferInfo.buffer = *vulkanBuffer.getUpdateVoxelBuffer();
         updateBufferInfo.offset = 0;
         updateBufferInfo.range = VK_WHOLE_SIZE;
 
         VkDescriptorBufferInfo vertexBufferInfo{};
-        vertexBufferInfo.buffer = *vulkanBuffer.getVertexBuffer();
+        // vertexBufferInfo.buffer = *vulkanBuffer.getVertexBuffer();
         vertexBufferInfo.offset = 0;
         vertexBufferInfo.range = VK_WHOLE_SIZE;
 
         VkDescriptorBufferInfo indexBufferInfo{};
-        indexBufferInfo.buffer = *vulkanBuffer.getIndexBuffer();
+        // indexBufferInfo.buffer = *vulkanBuffer.getIndexBuffer();
         indexBufferInfo.offset = 0;
         indexBufferInfo.range = VK_WHOLE_SIZE;
 
@@ -141,7 +144,7 @@ void VulkanDescriptor::createDescriptorSets() {
         descriptorWritesCompute[3].descriptorCount = 1;
         descriptorWritesCompute[3].pBufferInfo = &indexBufferInfo;
 
-        vkUpdateDescriptorSets(vulkanDevice.getDevice(), static_cast<uint32_t>(descriptorWritesCompute.size()), descriptorWritesCompute.data(), 0, nullptr);
+        vkUpdateDescriptorSets(Device::get().getDevice(), static_cast<uint32_t>(descriptorWritesCompute.size()), descriptorWritesCompute.data(), 0, nullptr);
 
         if (computeDescriptorSets[i] == VK_NULL_HANDLE) {
             throw std::runtime_error(std::string("Compute descriptor set allocation failed for index: ")+std::to_string(i));
@@ -149,6 +152,6 @@ void VulkanDescriptor::createDescriptorSets() {
     }
 }
 
-void VulkanDescriptor::cleanup() {
-    vkDestroyDescriptorPool(vulkanDevice.getDevice(), descriptorPool, nullptr);
+void Descriptor::cleanup() {
+    vkDestroyDescriptorPool(Device::get().getDevice(), descriptorPool, nullptr);
 }

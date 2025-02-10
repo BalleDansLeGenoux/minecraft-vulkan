@@ -1,15 +1,15 @@
-#include "core/vulkan_texture.h"
+#include "core/vulkan/texture.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
 #include <stdexcept>
 
-#include "core/vulkan_buffer.h"
-#include "core/vulkan_device.h"
-#include "core/vulkan_swapchain.h"
+#include "core/vulkan/buffer.h"
+#include "core/vulkan/device.h"
+#include "core/vulkan/swapchain.h"
 
-void VulkanTexture::createTextureImage() {
+void Texture::createTextureImage() {
     int texWidth, texHeight, texChannels;
     stbi_uc* pixels = stbi_load("res/textures/terrain.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     VkDeviceSize imageSize = texWidth * texHeight * 4;
@@ -18,34 +18,32 @@ void VulkanTexture::createTextureImage() {
         throw std::runtime_error("failed to load texture image!");
     }
 
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    vulkanBuffer.createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+    Buffer stagingBuffer;
+    stagingBuffer.createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
     void* data;
-    vkMapMemory(vulkanDevice.getDevice(), stagingBufferMemory, 0, imageSize, 0, &data);
+    vkMapMemory(Device::get().getDevice(), stagingBuffer.getBufferMemory(), 0, imageSize, 0, &data);
         memcpy(data, pixels, static_cast<size_t>(imageSize));
-    vkUnmapMemory(vulkanDevice.getDevice(), stagingBufferMemory);
+    vkUnmapMemory(Device::get().getDevice(), stagingBuffer.getBufferMemory());
 
     stbi_image_free(pixels);
 
-    vulkanBuffer.createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+    Buffer::createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
 
     transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-        copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+        copyBufferToImage(stagingBuffer.getBuffer(), textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
     transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-    vkDestroyBuffer(vulkanDevice.getDevice(), stagingBuffer, nullptr);
-    vkFreeMemory(vulkanDevice.getDevice(), stagingBufferMemory, nullptr);
+    stagingBuffer.cleanup();
 }
 
-void VulkanTexture::createTextureImageView() {
-    textureImageView = vulkanSwapchain.createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+void Texture::createTextureImageView() {
+    textureImageView = Swapchain::get().createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
-void VulkanTexture::createTextureSampler() {
+void Texture::createTextureSampler() {
         VkPhysicalDeviceProperties properties{};
-        vkGetPhysicalDeviceProperties(vulkanDevice.getPhysicalDevice(), &properties);
+        vkGetPhysicalDeviceProperties(Device::get().getPhysicalDevice(), &properties);
 
         VkSamplerCreateInfo samplerInfo{};
         samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -62,21 +60,21 @@ void VulkanTexture::createTextureSampler() {
         samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
         samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
 
-        if (vkCreateSampler(vulkanDevice.getDevice(), &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
+        if (vkCreateSampler(Device::get().getDevice(), &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
             throw std::runtime_error("failed to create texture sampler!");
         }
 }
 
-void VulkanTexture::cleanup() {
-    vkDestroySampler(vulkanDevice.getDevice(), textureSampler, nullptr);
-    vkDestroyImageView(vulkanDevice.getDevice(), textureImageView, nullptr);
+void Texture::cleanup() {
+    vkDestroySampler(Device::get().getDevice(), textureSampler, nullptr);
+    vkDestroyImageView(Device::get().getDevice(), textureImageView, nullptr);
 
-    vkDestroyImage(vulkanDevice.getDevice(), textureImage, nullptr);
-    vkFreeMemory(vulkanDevice.getDevice(), textureImageMemory, nullptr);
+    vkDestroyImage(Device::get().getDevice(), textureImage, nullptr);
+    vkFreeMemory(Device::get().getDevice(), textureImageMemory, nullptr);
 }
 
-void VulkanTexture::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
-    VkCommandBuffer commandBuffer = vulkanBuffer.beginSingleTimeCommands();
+void Texture::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
+    VkCommandBuffer commandBuffer = Buffer::beginSingleTimeCommands();
 
     VkImageMemoryBarrier barrier{};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -119,11 +117,11 @@ void VulkanTexture::transitionImageLayout(VkImage image, VkFormat format, VkImag
         1, &barrier
     );
 
-    vulkanBuffer.endSingleTimeCommands(commandBuffer);
+    Buffer::endSingleTimeCommands(commandBuffer);
 }
 
-void VulkanTexture::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) {
-    VkCommandBuffer commandBuffer = vulkanBuffer.beginSingleTimeCommands();
+void Texture::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) {
+    VkCommandBuffer commandBuffer = Buffer::beginSingleTimeCommands();
 
     VkBufferImageCopy region{};
     region.bufferOffset = 0;
@@ -142,5 +140,5 @@ void VulkanTexture::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t w
 
     vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-    vulkanBuffer.endSingleTimeCommands(commandBuffer);
+    Buffer::endSingleTimeCommands(commandBuffer);
 }

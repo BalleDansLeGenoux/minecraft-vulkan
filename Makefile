@@ -37,4 +37,8 @@ shaders:
 debug: all
 	gdb $(BUILD_DIR)/$(TARGET)
 
-.PHONY: all exec clean lines exec shaders debug
+test:
+	g++ -o bin/test src/main.cpp
+	./bin/test
+
+.PHONY: all exec clean lines exec shaders debug test

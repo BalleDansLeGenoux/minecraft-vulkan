@@ -1,27 +1,26 @@
-#include "core/vulkan_device.h"
+#include "core/vulkan/device.h"
 
 #include <iostream>
 #include <set>
 
-#include "core/vulkan_buffer.h"
-#include "core/vulkan_instance.h"
-#include "core/vulkan_swapchain.h"
-#include "core/vulkan_compute.h"
+#include "core/vulkan/instance.h"
+#include "core/vulkan/buffer.h"
+#include "core/vulkan/swapchain.h"
 
 const std::vector<const char*> deviceExtensions = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
 
-void VulkanDevice::pickPhysicalDevice() {
+void Device::pickPhysicalDevice() {
     uint32_t deviceCount = 0;
-    vkEnumeratePhysicalDevices(vulkanInstance.getInstance(), &deviceCount, nullptr);
+    vkEnumeratePhysicalDevices(Instance::get().getInstance(), &deviceCount, nullptr);
 
     if (deviceCount == 0) {
         throw std::runtime_error("failed to find GPUs with Vulkan support!");
     }
 
     std::vector<VkPhysicalDevice> devices(deviceCount);
-    vkEnumeratePhysicalDevices(vulkanInstance.getInstance(), &deviceCount, devices.data());
+    vkEnumeratePhysicalDevices(Instance::get().getInstance(), &deviceCount, devices.data());
 
     for (const auto& pdevice : devices) {
         if (isDeviceSuitable(pdevice)) {
@@ -35,7 +34,7 @@ void VulkanDevice::pickPhysicalDevice() {
     }
 }
 
-void VulkanDevice::createLogicalDevice() {
+void Device::createLogicalDevice() {
     QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -74,25 +73,25 @@ void VulkanDevice::createLogicalDevice() {
     vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
 }
 
-void VulkanDevice::createDepthResources() {
+void Device::createDepthResources() {
     VkFormat depthFormat = findDepthFormat();
 
-    vulkanBuffer.createImage(vulkanSwapchain.getSwapChainExtent().width, vulkanSwapchain.getSwapChainExtent().height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
-    depthImageView = vulkanSwapchain.createImageView(depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+    Buffer::createImage(Swapchain::get().getSwapChainExtent().width, Swapchain::get().getSwapChainExtent().height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
+    depthImageView = Swapchain::get().createImageView(depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
-void VulkanDevice::cleanup() {
+void Device::cleanup() {
     vkDestroyDevice(device, nullptr);
 }
 
-bool VulkanDevice::isDeviceSuitable(VkPhysicalDevice pdevice) {
+bool Device::isDeviceSuitable(VkPhysicalDevice pdevice) {
     QueueFamilyIndices indices = findQueueFamilies(pdevice);
 
     bool extensionsSupported = checkDeviceExtensionSupport(pdevice);
 
     bool swapChainAdequate = false;
     if (extensionsSupported) {
-        SwapChainSupportDetails swapChainSupport = vulkanSwapchain.querySwapChainSupport(pdevice);
+        SwapChainSupportDetails swapChainSupport = Swapchain::get().querySwapChainSupport(pdevice);
         swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
     }
 
@@ -102,7 +101,7 @@ bool VulkanDevice::isDeviceSuitable(VkPhysicalDevice pdevice) {
     return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
 }
 
-QueueFamilyIndices VulkanDevice::findQueueFamilies(VkPhysicalDevice pdevice) {
+QueueFamilyIndices Device::findQueueFamilies(VkPhysicalDevice pdevice) {
     QueueFamilyIndices indices;
 
     uint32_t queueFamilyCount = 0;
@@ -118,7 +117,7 @@ QueueFamilyIndices VulkanDevice::findQueueFamilies(VkPhysicalDevice pdevice) {
         }
 
         VkBool32 presentSupport = false;
-        vkGetPhysicalDeviceSurfaceSupportKHR(pdevice, i, vulkanInstance.getSurface(), &presentSupport);
+        vkGetPhysicalDeviceSurfaceSupportKHR(pdevice, i, Instance::get().getSurface(), &presentSupport);
 
         if (presentSupport) {
             indices.presentFamily = i;
@@ -134,7 +133,7 @@ QueueFamilyIndices VulkanDevice::findQueueFamilies(VkPhysicalDevice pdevice) {
     return indices;
 }
 
-bool VulkanDevice::checkDeviceExtensionSupport(VkPhysicalDevice pdevice) {
+bool Device::checkDeviceExtensionSupport(VkPhysicalDevice pdevice) {
     uint32_t extensionCount;
     vkEnumerateDeviceExtensionProperties(pdevice, nullptr, &extensionCount, nullptr);
 
@@ -150,7 +149,7 @@ bool VulkanDevice::checkDeviceExtensionSupport(VkPhysicalDevice pdevice) {
     return requiredExtensions.empty();
 }
 
-VkFormat VulkanDevice::findDepthFormat() {
+VkFormat Device::findDepthFormat() {
     return findSupportedFormat(
     {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
         VK_IMAGE_TILING_OPTIMAL,
@@ -158,7 +157,7 @@ VkFormat VulkanDevice::findDepthFormat() {
     );
 }
 
-VkFormat VulkanDevice::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
+VkFormat Device::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
     for (VkFormat format : candidates) {
         VkFormatProperties props;
         vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &props);

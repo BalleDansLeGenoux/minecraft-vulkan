@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-#include "core/vulkan_app.h"
+#include "core/vulkan/app.h"
 
 int main(int argc, char const *argv[])
 {

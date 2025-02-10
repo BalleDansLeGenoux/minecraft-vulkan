@@ -1,8 +1,9 @@
-#ifndef VULKAN_TOOLS_HPP
-#define VULKAN_TOOLS_HPP
+#ifndef VERTEX_H
+#define VERTEX_H
 
-#include <array>
+#include <vulkan/vulkan.h>
 #include <glm/glm.hpp>
+#include <array>
 
 struct Vertex {
     alignas(16) glm::vec3 pos;
@@ -38,16 +39,6 @@ struct Vertex {
 
         return attributeDescriptions;
     }
-};
-
-struct UniformBufferObject {
-    alignas(16) glm::mat4 matrix;
-};
-
-struct BlockUpdate {
-    glm::ivec4 chunkPos;
-    glm::uvec4 blockPos;
-    glm::uvec4 blockID;
 };
 
 #endif
