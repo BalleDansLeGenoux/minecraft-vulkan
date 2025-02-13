@@ -1,17 +1,16 @@
-#include "core/vulkan/descriptor.h"
+#include "graphics/descriptor.h"
 
 #include <iostream>
 #include <array>
 
-#include "core/vulkan/config.h"
-#include "core/vulkan/buffer.h"
-#include "core/vulkan/device.h"
-#include "core/vulkan/graphic_pipeline.h"
-#include "core/vulkan/texture.h"
-#include "core/vulkan/compute_pipeline.h"
-#include "core/vulkan/buffer_manager.h"
-
-#include "core/vulkan/uniform_buffer.h"
+#include "graphics/config.h"
+#include "graphics/buffer.h"
+#include "graphics/device.h"
+#include "graphics/graphic_pipeline.h"
+#include "graphics/texture.h"
+#include "graphics/compute_pipeline.h"
+#include "graphics/buffer_manager.h"
+#include "graphics/uniform_buffer.h"
 
 void Descriptor::createDescriptorPool() {
     std::array<VkDescriptorPoolSize, 3> poolSizes{};

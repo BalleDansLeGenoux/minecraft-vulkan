@@ -4,8 +4,8 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
-#include "core/vulkan/uniform_buffer.h"
-#include "core/vulkan/block_update.h"
+#include "graphics/uniform_buffer.h"
+#include "graphics/block_update.h"
 
 class Buffer;
 

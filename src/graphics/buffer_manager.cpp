@@ -1,13 +1,13 @@
-#include "core/vulkan/buffer_manager.h"
+#include "graphics/buffer_manager.h"
 
 #include <iostream>
-
-#include "core/vulkan/buffer.h"
-#include "core/vulkan/vertex.h"
-#include "core/vulkan/config.h"
-#include "core/vulkan/renderer.h"
-#include "core/vulkan/device.h"
 #include <string.h>
+
+#include "graphics/buffer.h"
+#include "graphics/vertex.h"
+#include "graphics/config.h"
+#include "graphics/renderer.h"
+#include "graphics/device.h"
 
 void BufferManager::createVertexBuffer() {
     VkDeviceSize bufferSize = SIZE_CHUNK_BUFFER * 1024;

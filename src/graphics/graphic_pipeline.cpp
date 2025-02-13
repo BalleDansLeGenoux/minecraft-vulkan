@@ -1,10 +1,10 @@
-#include "core/vulkan/graphic_pipeline.h"
+#include "graphics/graphic_pipeline.h"
 
 #include <array>
 
-#include "core/vulkan/device.h"
-#include "core/vulkan/swapchain.h"
-#include "core/vulkan/vertex.h"
+#include "graphics/device.h"
+#include "graphics/swapchain.h"
+#include "graphics/vertex.h"
 
 void GraphicPipeline::createRenderPass() {
     VkAttachmentDescription colorAttachment{};

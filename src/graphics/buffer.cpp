@@ -1,4 +1,4 @@
-#include "core/vulkan/buffer.h"
+#include "graphics/buffer.h"
 
 #include <cstring>
 #include <chrono>
@@ -7,10 +7,10 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 
-#include "core/vulkan/config.h"
-#include "core/vulkan/device.h" 
-#include "core/vulkan/renderer.h"
-#include "core/vulkan/swapchain.h" 
+#include "graphics/config.h"
+#include "graphics/device.h" 
+#include "graphics/renderer.h"
+#include "graphics/swapchain.h" 
 
 void Buffer::cleanup() {
     vkDestroyBuffer(Device::get().getDevice(), buffer, nullptr);

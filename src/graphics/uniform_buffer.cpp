@@ -1,9 +1,9 @@
-#include "core/vulkan/uniform_buffer.h"
+#include "graphics/uniform_buffer.h"
 
 #include <string.h>
 #include <stdexcept>
 
-#include "core/vulkan/device.h"
+#include "graphics/device.h"
 
 void UniformBuffer::createUniformBuffer() {
     VkDeviceSize bufferSize = sizeof(UniformBufferObject); 

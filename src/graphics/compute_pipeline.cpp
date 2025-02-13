@@ -1,12 +1,12 @@
-#include "core/vulkan/compute_pipeline.h"
+#include "graphics/compute_pipeline.h"
 
 #include <iostream>
 #include <array>
 #include <string>
 
-#include "core/vulkan/device.h"
-#include "core/vulkan/graphic_pipeline.h"
-#include "core/vulkan/descriptor.h"
+#include "graphics/device.h"
+#include "graphics/graphic_pipeline.h"
+#include "graphics/descriptor.h"
 
 
 void ComputePipeline::createDescriptorSetLayout() {

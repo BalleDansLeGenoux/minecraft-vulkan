@@ -1,13 +1,13 @@
-#include "core/vulkan/texture.h"
+#include "graphics/texture.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
 #include <stdexcept>
 
-#include "core/vulkan/buffer.h"
-#include "core/vulkan/device.h"
-#include "core/vulkan/swapchain.h"
+#include "graphics/buffer.h"
+#include "graphics/device.h"
+#include "graphics/swapchain.h"
 
 void Texture::createTextureImage() {
     int texWidth, texHeight, texChannels;

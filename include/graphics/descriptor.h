@@ -4,7 +4,7 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
-#include "core/vulkan/renderer.h"
+#include "graphics/renderer.h"
 
 class Descriptor {
 public:

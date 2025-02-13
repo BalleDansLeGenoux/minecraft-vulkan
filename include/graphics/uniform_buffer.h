@@ -4,7 +4,7 @@
 #include <vulkan/vulkan.h>
 #include <glm/glm.hpp>
 
-#include <core/vulkan/buffer.h>
+#include <graphics/buffer.h>
 
 struct UniformBufferObject {
     alignas(16) glm::mat4 matrix;

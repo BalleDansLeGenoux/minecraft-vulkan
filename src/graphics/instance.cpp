@@ -1,9 +1,9 @@
-#include "core/vulkan/instance.h"
+#include "graphics/instance.h"
 
 #include <iostream>
 #include <cstring>
 
-#include "core/vulkan/config.h"
+#include "graphics/config.h"
 
 const std::vector<const char*> validationLayers = {
     "VK_LAYER_KHRONOS_validation"

@@ -1,12 +1,12 @@
-#include "core/vulkan/renderer.h"
+#include "graphics/renderer.h"
 
 #include <array>
 #include <stdexcept>
 
-#include "core/vulkan/config.h"
-#include "core/vulkan/device.h"
-#include "core/vulkan/graphic_pipeline.h"
-#include "core/vulkan/swapchain.h"
+#include "graphics/config.h"
+#include "graphics/device.h"
+#include "graphics/graphic_pipeline.h"
+#include "graphics/swapchain.h"
 
 void Renderer::createCommandPool() {
     QueueFamilyIndices queueFamilyIndices = Device::get().findQueueFamilies(Device::get().getPhysicalDevice());

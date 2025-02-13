@@ -1,12 +1,12 @@
-#include "core/vulkan/swapchain.h"
+#include "graphics/swapchain.h"
 
 #include <algorithm>
 #include <limits>
 #include <iostream>
 
-#include "core/vulkan/device.h"
-#include "core/vulkan/instance.h"
-#include "core/vulkan/renderer.h"
+#include "graphics/device.h"
+#include "graphics/instance.h"
+#include "graphics/renderer.h"
 
 void Swapchain::createSwapChain(GLFWwindow* window) {
     SwapChainSupportDetails swapChainSupport = querySwapChainSupport(Device::get().getPhysicalDevice());

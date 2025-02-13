@@ -6,19 +6,19 @@
 #include <chrono>
 
 #include "core/camera.h"
-#include "core/vulkan/config.h"
-#include "core/vulkan/buffer.h"
-#include "core/vulkan/buffer_manager.h"
-#include "core/vulkan/compute_pipeline.h"
-#include "core/vulkan/descriptor.h"
-#include "core/vulkan/device.h"
-#include "core/vulkan/instance.h"
-#include "core/vulkan/graphic_pipeline.h"
-#include "core/vulkan/renderer.h"
-#include "core/vulkan/swapchain.h"
-#include "core/vulkan/texture.h"
-#include "core/vulkan/vertex.h"
-#include "core/vulkan/block_update.h"
+#include "graphics/config.h"
+#include "graphics/buffer.h"
+#include "graphics/buffer_manager.h"
+#include "graphics/compute_pipeline.h"
+#include "graphics/descriptor.h"
+#include "graphics/device.h"
+#include "graphics/instance.h"
+#include "graphics/graphic_pipeline.h"
+#include "graphics/renderer.h"
+#include "graphics/swapchain.h"
+#include "graphics/texture.h"
+#include "graphics/vertex.h"
+#include "graphics/block_update.h"
 
 class VulkanApp {
 public:

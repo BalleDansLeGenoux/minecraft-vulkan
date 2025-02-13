@@ -1,11 +1,11 @@
-#include "core/vulkan/device.h"
+#include "graphics/device.h"
 
 #include <iostream>
 #include <set>
 
-#include "core/vulkan/instance.h"
-#include "core/vulkan/buffer.h"
-#include "core/vulkan/swapchain.h"
+#include "graphics/instance.h"
+#include "graphics/buffer.h"
+#include "graphics/swapchain.h"
 
 const std::vector<const char*> deviceExtensions = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
