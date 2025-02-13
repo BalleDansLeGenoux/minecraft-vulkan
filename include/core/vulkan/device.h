@@ -40,8 +40,6 @@ public:
     VkDeviceMemory& getDepthImageMemory() { return depthImageMemory; }
     VkImageView& getDepthImageView() { return depthImageView; }
 
-    // Device();
-
 private:
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
     VkDevice device;

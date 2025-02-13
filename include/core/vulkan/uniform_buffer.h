@@ -16,14 +16,12 @@ public:
     void updateUniformBuffer(glm::mat4 matrix);
     void cleanup();
 
+    VkBuffer& getBuffer() { return buffer.getBuffer(); }
+    VkDeviceMemory& getBufferMemory() { return buffer.getBufferMemory(); }
+
 private:
     Buffer buffer;
     void* uniformBufferMapped;
-
-    VkDevice& device;
-    VkPhysicalDevice& physicalDevice;
-    VkQueue& graphicsQueue;
-    VkCommandPool& commandPool;
 };
 
 #endif

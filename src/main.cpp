@@ -15,8 +15,8 @@ int main(int argc, char const *argv[])
 
     BlockUpdate a;
 
-    for (int x = 0; x < 200; x++) {
-        for (int z = 0; z < 200; z++) {
+    for (int x = 0; x < 10; x++) {
+        for (int z = 0; z < 10; z++) {
             a.chunkPos = glm::ivec4(0, 0, 0, 0);
             a.blockPos = glm::uvec4(x, 0, z, 0);
             a.blockID = glm::uvec4(69, 0, 0, 0);
@@ -26,7 +26,7 @@ int main(int argc, char const *argv[])
 
 
 
-    VulkanApp app({200/2, 3.0f, 200/2}, 45, tmp);
+    VulkanApp app({10/2, 3.0f, 10/2}, 45, tmp);
 
     GLFWwindow* window = app.getWindow();
 

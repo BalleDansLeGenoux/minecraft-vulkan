@@ -13,6 +13,8 @@ const bool enableValidationLayers = true;   // Activer les layers en mode debug
 
 const int MAX_FRAMES_IN_FLIGHT = 4;
 
+const int SIZE_CHUNK_BUFFER = 256*1024;
+
 const int RENDER_DISTANCE = 16;
 const int CHUNK_WIDTH = 16;
 const int CHUNK_HEIGHT = 256;

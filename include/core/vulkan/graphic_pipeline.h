@@ -27,8 +27,6 @@ public:
     const VkPipeline& getGraphicsPipeline() { return graphicsPipeline; }
     const VkPipelineLayout& getPipelineLayout() { return pipelineLayout; }
 
-    // GraphicPipeline();
-
 private:
     VkRenderPass renderPass;
 

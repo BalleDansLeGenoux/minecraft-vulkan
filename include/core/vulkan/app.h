@@ -8,6 +8,7 @@
 #include "core/camera.h"
 #include "core/vulkan/config.h"
 #include "core/vulkan/buffer.h"
+#include "core/vulkan/buffer_manager.h"
 #include "core/vulkan/compute_pipeline.h"
 #include "core/vulkan/descriptor.h"
 #include "core/vulkan/device.h"
@@ -17,12 +18,7 @@
 #include "core/vulkan/swapchain.h"
 #include "core/vulkan/texture.h"
 #include "core/vulkan/vertex.h"
-
-struct BlockUpdate {
-    glm::ivec4 chunkPos;
-    glm::uvec4 blockPos;
-    glm::uvec4 blockID;
-};
+#include "core/vulkan/block_update.h"
 
 class VulkanApp {
 public:

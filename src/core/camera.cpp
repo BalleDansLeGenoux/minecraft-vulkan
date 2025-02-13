@@ -51,7 +51,6 @@ int Camera::processKeyboard(int key, int action) {
 
     if (action != GLFW_PRESS)   return 0;
     if (key == GLFW_KEY_ESCAPE) return 1;
-    if (key == GLFW_KEY_F)      return 2;
 
     return 0;
 }

@@ -20,8 +20,6 @@ public:
     VkInstance& getInstance() { return instance; }
     VkSurfaceKHR& getSurface() { return surface; }
 
-    // Instance();
-
 private:
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;

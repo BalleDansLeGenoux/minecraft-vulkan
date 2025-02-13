@@ -9,6 +9,7 @@
 #include "core/vulkan/graphic_pipeline.h"
 #include "core/vulkan/texture.h"
 #include "core/vulkan/compute_pipeline.h"
+#include "core/vulkan/buffer_manager.h"
 
 #include "core/vulkan/uniform_buffer.h"
 
@@ -55,7 +56,7 @@ void Descriptor::createDescriptorSets() {
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         VkDescriptorBufferInfo bufferInfo{};
-        // bufferInfo.buffer = vulkanBuffer.getUniformBuffers()[i];
+        bufferInfo.buffer = BufferManager::get().getUniformBuffer(i).getBuffer();
         bufferInfo.offset = 0;
         bufferInfo.range = sizeof(UniformBufferObject);
 
@@ -91,22 +92,22 @@ void Descriptor::createDescriptorSets() {
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         VkDescriptorBufferInfo voxelBufferInfo{};
-        // voxelBufferInfo.buffer = *vulkanBuffer.getVoxelBuffer();
+        voxelBufferInfo.buffer = BufferManager::get().getVoxelBuffer().getBuffer();
         voxelBufferInfo.offset = 0;
         voxelBufferInfo.range = VK_WHOLE_SIZE;
 
         VkDescriptorBufferInfo updateBufferInfo{};
-        // updateBufferInfo.buffer = *vulkanBuffer.getUpdateVoxelBuffer();
+        updateBufferInfo.buffer = BufferManager::get().getUpdateVoxelBuffer().getBuffer();
         updateBufferInfo.offset = 0;
         updateBufferInfo.range = VK_WHOLE_SIZE;
 
         VkDescriptorBufferInfo vertexBufferInfo{};
-        // vertexBufferInfo.buffer = *vulkanBuffer.getVertexBuffer();
+        vertexBufferInfo.buffer = BufferManager::get().getVertexBuffers().getBuffer();
         vertexBufferInfo.offset = 0;
         vertexBufferInfo.range = VK_WHOLE_SIZE;
 
         VkDescriptorBufferInfo indexBufferInfo{};
-        // indexBufferInfo.buffer = *vulkanBuffer.getIndexBuffer();
+        indexBufferInfo.buffer = BufferManager::get().getIndexBuffers().getBuffer();
         indexBufferInfo.offset = 0;
         indexBufferInfo.range = VK_WHOLE_SIZE;
 

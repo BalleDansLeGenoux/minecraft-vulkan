@@ -17,8 +17,6 @@ public:
     void createDescriptorSets();
     void cleanup();
 
-    // Descriptor();
-
     const std::vector<VkDescriptorSet>& getDescriptorSets() { return descriptorSets; }
     const VkDescriptorSet& getComputeDescriptorSets() { return computeDescriptorSets[Renderer::get().getCurrentFrame()]; }
 

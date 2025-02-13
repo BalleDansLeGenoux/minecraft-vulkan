@@ -19,8 +19,6 @@ public:
     void createFramebuffers();
     void cleanup();
 
-    // Renderer();
-
     const VkCommandPool& getCommandPool() { return commandPool; }
     const VkCommandBuffer& getCurrentCommandBuffers() { return commandBuffers[currentFrame]; }
     const VkCommandBuffer& getCommandBuffer(int index) { return commandBuffers[index]; }

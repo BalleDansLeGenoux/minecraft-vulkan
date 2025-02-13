@@ -36,8 +36,6 @@ public:
 
     void addSwapChainFramebuffers(VkFramebuffer pframeBuffer);
 
-    // Swapchain();
-
 private:
     VkSwapchainKHR swapChain;
     std::vector<VkImage> swapChainImages;

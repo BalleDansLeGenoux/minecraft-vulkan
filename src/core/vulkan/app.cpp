@@ -22,120 +22,12 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 
-// void printVertexBuffer(Buffer vulkanBuffer, Device device, size_t sizeToPrint) {
-//     // ceci est un test, oui monsieur, un test
+void debug(VulkanApp* app) {
+    BufferManager::get().printVertexBuffer(100*4);
+    BufferManager::get().printIndexBuffer(100*6);
+}
 
-//     VkBuffer stagingBuffer;
-//     VkDeviceMemory stagingBufferMemory;
-//     VkDeviceSize bufferSize = sizeof(Vertex) * sizeToPrint;
-//     // VkDeviceSize bufferSize = sizeof(Vertex) * vertices.size();
-    
-//     vulkanBuffer.createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
-//     if (!stagingBuffer || !stagingBufferMemory) {
-//         throw std::runtime_error("Failed to create staging buffer!");
-//     }
-
-//     // Copier le contenu du tampon de sortie vers le tampon de staging
-//     vulkanBuffer.copyBuffer(*vulkanBuffer.getVertexBuffer(), stagingBuffer, bufferSize);
-
-//     // Mapper la mémoire pour accéder aux données
-//     void* data;
-//     vkMapMemory(device.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
-//     Vertex* resultData = static_cast<Vertex*>(data);
-
-//     std::cout << "Buffer capacity : " << BASE_BUFFER_CAPACITY << std::endl;
-
-//     // Vérifier les résultats
-//     for (int i = 0; i < sizeToPrint; ++i) {
-//         std::cout << "  pos [" << i << "] = " << resultData[i].pos.x << " | " << resultData[i].pos.y << " | " << resultData[i].pos.z << std::endl;
-//         // std::cout << "     color [" << i << "] = " << resultData[i].color.x << " | " << resultData[i].color.y << " | " << resultData[i].color.z << std::endl;
-//         // std::cout << "  texCoord [" << i << "] = " << resultData[i].texCoord.x << " | " << resultData[i].texCoord.y << std::endl << std::endl;
-//         // std::cout << "Result[" << i << "] = " << resultData[i] << std::endl;
-//     }
-
-//     vkUnmapMemory(device.getDevice(), stagingBufferMemory);
-    
-//     vkDestroyBuffer(device.getDevice(), stagingBuffer, nullptr);
-//     vkFreeMemory(device.getDevice(), stagingBufferMemory, nullptr);
-// }
-
-// void printIndexBuffer(VulkanBuffer vulkanBuffer, VulkanDevice device, size_t sizeToPrint) {
-//     // ceci est un test, oui monsieur, un test
-
-//     VkBuffer stagingBuffer;
-//     VkDeviceMemory stagingBufferMemory;
-//     VkDeviceSize bufferSize = sizeof(uint32_t) * sizeToPrint;
-//     // VkDeviceSize bufferSize = sizeof(uint32_t) * indices.size();
-    
-//     vulkanBuffer.createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
-//     if (!stagingBuffer || !stagingBufferMemory) {
-//         throw std::runtime_error("Failed to create staging buffer!");
-//     }
-
-//     // Copier le contenu du tampon de sortie vers le tampon de staging
-//     vulkanBuffer.copyBuffer(*vulkanBuffer.getIndexBuffer(), stagingBuffer, bufferSize);
-
-//     // Mapper la mémoire pour accéder aux données
-//     void* data;
-//     vkMapMemory(device.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
-//     uint32_t* resultData = static_cast<uint32_t*>(data);
-
-//     std::cout << "Buffer capacity : " << BASE_BUFFER_CAPACITY << std::endl;
-
-//     // Vérifier les résultats
-//     for (int i = 0; i < sizeToPrint; ++i) {
-//         std::cout << "  index [" << i << "] = " << resultData[i] << std::endl;
-//     }
-
-//     vkUnmapMemory(device.getDevice(), stagingBufferMemory);
-    
-//     vkDestroyBuffer(device.getDevice(), stagingBuffer, nullptr);
-//     vkFreeMemory(device.getDevice(), stagingBufferMemory, nullptr);
-// }
-
-// void printIndexBufferLikeUpdateBuffer(VulkanBuffer vulkanBuffer, VulkanDevice device, size_t size) {
-//     // ceci est un test, oui monsieur, un test
-
-//     VkBuffer stagingBuffer;
-//     VkDeviceMemory stagingBufferMemory;
-//     VkDeviceSize bufferSize = sizeof(BlockUpdate) * size;
-//     // VkDeviceSize bufferSize = sizeof(uint32_t) * indices.size();
-    
-//     vulkanBuffer.createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
-//     if (!stagingBuffer || !stagingBufferMemory) {
-//         throw std::runtime_error("Failed to create staging buffer!");
-//     }
-
-//     // Copier le contenu du tampon de sortie vers le tampon de staging
-//     vulkanBuffer.copyBuffer(*vulkanBuffer.getUpdateVoxelBuffer(), stagingBuffer, bufferSize);
-
-//     // Mapper la mémoire pour accéder aux données
-//     void* data;
-//     vkMapMemory(device.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
-//     BlockUpdate* resultData = static_cast<BlockUpdate*>(data);
-
-//     std::cout << "Buffer capacity : " << BASE_BUFFER_CAPACITY << std::endl;
-
-//     // Vérifier les résultats
-//     for (int i = 0; i < size; ++i) {
-//         std::cout << "  index [" << i << "].chunkPos.x = " << resultData[i].chunkPos.x << std::endl;
-//         std::cout << "  index [" << i << "].chunkPos.y = " << resultData[i].chunkPos.y << std::endl;
-//         std::cout << "  index [" << i << "].blockPos.x = " << resultData[i].blockPos.x << std::endl;
-//         std::cout << "  index [" << i << "].blockPos.y = " << resultData[i].blockPos.y << std::endl;
-//         std::cout << "  index [" << i << "].blockPos.z = " << resultData[i].blockPos.z << std::endl;
-//         std::cout << "  index [" << i << "].blockID = " << resultData[i].blockID.x << std::endl;
-//     }
-
-//     std::cout << std::endl;
-
-//     vkUnmapMemory(device.getDevice(), stagingBufferMemory);
-    
-//     vkDestroyBuffer(device.getDevice(), stagingBuffer, nullptr);
-//     vkFreeMemory(device.getDevice(), stagingBufferMemory, nullptr);
-// }
 
 void VulkanApp::initWindow() {
     glfwInit();
@@ -154,30 +46,35 @@ void VulkanApp::initVulkan() {
     Instance::get().createInstance();
     Instance::get().setupDebugMessenger();
     Instance::get().createSurface(window);
+
     Device::get().pickPhysicalDevice();
     Device::get().createLogicalDevice();
+
     Swapchain::get().createSwapChain(window);
     Swapchain::get().createImageViews();
+
     GraphicPipeline::get().createRenderPass();
     GraphicPipeline::get().createDescriptorSetLayout();
     GraphicPipeline::get().createGraphicsPipeline();
     ComputePipeline::get().createDescriptorSetLayout();
     ComputePipeline::get().createComputePipeline();
+
     Renderer::get().createCommandPool();
     Device::get().createDepthResources();
     Renderer::get().createFramebuffers();
+
     Texture::get().createTextureImage();
     Texture::get().createTextureImageView();
     Texture::get().createTextureSampler();
 
-    // vulkanBuffer.createVertexBuffer();
-    // vulkanBuffer.createIndexBuffer();
-    // vulkanBuffer.createVoxelBuffer();
-    // vulkanBuffer.createUpdateVoxelBuffer();
-    // vulkanBuffer.createUniformBuffers();
+    BufferManager::get().createVertexBuffer();
+    BufferManager::get().createIndexBuffer();
+    BufferManager::get().createComputeBuffer();
+    BufferManager::get().createUniformBuffers();
 
     Descriptor::get().createDescriptorPool();
     Descriptor::get().createDescriptorSets();
+
     Renderer::get().createCommandBuffers();
     Renderer::get().createComputeCommandBuffers();
     Renderer::get().createSyncObjects();
@@ -202,9 +99,7 @@ void VulkanApp::run() {
     
     mainLoop();
 
-    // printVertexBuffer(vulkanBuffer, vulkanDevice, 4*200*200);
-    // printIndexBuffer(vulkanBuffer, vulkanDevice, 12);
-    // printIndexBufferLikeUpdateBuffer(vulkanBuffer, vulkanDevice, 1);
+    // debug(this);
 
     vkDeviceWaitIdle(Device::get().getDevice());
     
@@ -215,12 +110,12 @@ void VulkanApp::cleanup() {
     Swapchain::get().cleanup();
     GraphicPipeline::get().cleanup();
     ComputePipeline::get().cleanup();
-    // vulkanBuffer.cleanupUniform();
+    BufferManager::get().cleanupUniformBuffer();
     Descriptor::get().cleanup();
     Texture::get().cleanup();
     GraphicPipeline::get().cleanupDescriptorSetLayout();
     ComputePipeline::get().cleanupDescriptorSetLayout();
-    // vulkanBuffer.cleanupVertexIndices();
+    BufferManager::get().cleanupBuffers();
     Renderer::get().cleanup();
     Device::get().cleanup();
     Instance::get().cleanup();
@@ -248,7 +143,7 @@ void VulkanApp::drawFrame() {
         throw std::runtime_error("failed to acquire swap chain image!");
     }
 
-    // vulkanBuffer.updateUniformBuffer(camera.getProjectionMatrix()*camera.getViewMatrix());
+    BufferManager::get().updateUniformBuffer(camera.getProjectionMatrix()*camera.getViewMatrix());
 
     vkResetFences(Device::get().getDevice(), 1, &Renderer::get().getCurrentInFlightFences());
 
@@ -337,11 +232,11 @@ void VulkanApp::recordCommandBuffer(uint32_t imageIndex) {
         scissor.extent = Swapchain::get().getSwapChainExtent();
         vkCmdSetScissor(Renderer::get().getCurrentCommandBuffers(), 0, 1, &scissor);
 
-        // VkBuffer vertexBuffers[] = {*vulkanBuffer.getVertexBuffer()};
+        VkBuffer vertexBuffers[] = {BufferManager::get().getVertexBuffers().getBuffer()};
         VkDeviceSize offsets[] = {0};
 
-        // vkCmdBindVertexBuffers(Renderer::get().getCurrentCommandBuffers(), 0, 1, vertexBuffers, offsets);
-        // vkCmdBindIndexBuffer(Renderer::get().getCurrentCommandBuffers(), *vulkanBuffer.getIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
+        vkCmdBindVertexBuffers(Renderer::get().getCurrentCommandBuffers(), 0, 1, vertexBuffers, offsets);
+        vkCmdBindIndexBuffer(Renderer::get().getCurrentCommandBuffers(), BufferManager::get().getIndexBuffers().getBuffer(), 0, VK_INDEX_TYPE_UINT32);
         vkCmdBindDescriptorSets(Renderer::get().getCurrentCommandBuffers(), VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicPipeline::get().getPipelineLayout(), 0, 1, &(Descriptor::get().getDescriptorSets())[Renderer::get().getCurrentFrame()], 0, nullptr);
 
         vkCmdDrawIndexed(Renderer::get().getCurrentCommandBuffers(), 6*blockUpdate.size(), 1, 0, 0, 0); // Va faloir changer ça (recup le nb de face a afficher), le 2eme arg c'est le nb d'index
@@ -351,8 +246,6 @@ void VulkanApp::recordCommandBuffer(uint32_t imageIndex) {
     if (vkEndCommandBuffer(Renderer::get().getCurrentCommandBuffers()) != VK_SUCCESS) {
         throw std::runtime_error("failed to record command buffer!");
     }
-
-    // blockUpdate.clear();
 }
 
 void VulkanApp::recordComputeCommandBuffer() {
@@ -370,7 +263,7 @@ void VulkanApp::recordComputeCommandBuffer() {
     uint32_t bufferSize = blockUpdate.size();
     vkCmdPushConstants(Renderer::get().getCurrentComputeCommandBuffers(), ComputePipeline::get().getComputePipelineLayout(), VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &bufferSize);
 
-    // vulkanBuffer.updateVoxelsBuffer(blockUpdate);
+    BufferManager::get().updateUpdateVoxelBuffer(blockUpdate);
 
     vkCmdDispatch(Renderer::get().getCurrentComputeCommandBuffers(), blockUpdate.size(), 1, 1);
 
@@ -406,6 +299,8 @@ void VulkanApp::computeShader(std::vector<VkSemaphore>& waitSemaphores, std::vec
     if (vkQueueSubmit(Device::get().getComputeQueue(), 1, &submitInfo, Renderer::get().getCurrentComputeInFlightFences()) != VK_SUCCESS) {
         throw std::runtime_error("failed to submit compute command buffer!");
     };
+
+    std::cout << "Compute shader ok !" << std::endl;
 }
 
 void VulkanApp::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -423,9 +318,6 @@ void VulkanApp::key_callback(GLFWwindow* window, int key, int scancode, int acti
         glfwSetWindowShouldClose(window, true);
         break;
 
-    case 2:
-        std::cout << "[FPS] " << 1.0f/app->getDeltaTime() << std::endl;
-    
     default:
         break;
     }

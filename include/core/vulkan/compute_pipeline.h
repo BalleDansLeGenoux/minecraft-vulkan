@@ -20,8 +20,6 @@ public:
     const VkPipelineLayout& getComputePipelineLayout() const { return pipelineLayout; };
     const VkDescriptorSetLayout& getDescriptorSetLayout() const { return descriptorSetLayout; }
 
-    // ComputePipeline();
-
 private:
     VkDescriptorSetLayout descriptorSetLayout;
     VkPipeline computePipeline;
