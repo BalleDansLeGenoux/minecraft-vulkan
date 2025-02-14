@@ -3,7 +3,7 @@
 #include <array>
 #include <stdexcept>
 
-#include "graphics/config.h"
+#include "core/config.h"
 #include "graphics/device.h"
 #include "graphics/graphic_pipeline.h"
 #include "graphics/swapchain.h"

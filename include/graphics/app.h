@@ -6,7 +6,7 @@
 #include <chrono>
 
 #include "core/camera.h"
-#include "graphics/config.h"
+#include "core/config.h"
 #include "graphics/buffer.h"
 #include "graphics/buffer_manager.h"
 #include "graphics/compute_pipeline.h"
@@ -20,16 +20,19 @@
 #include "graphics/vertex.h"
 #include "graphics/block_update.h"
 
+#include "world/chunk.h"
+#include "world/voxel.h"
+
 class VulkanApp {
 public:
-    void initWindow();
-    void initVulkan();
-    void mainLoop();
-    void run();
+    void init();
+    void render();
     void drawFrame();
     void recordCommandBuffer(uint32_t imageIndex);
     void recordComputeCommandBuffer();
     void cleanup();
+
+    bool isRun() { return !glfwWindowShouldClose(window); };
 
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 
@@ -49,6 +52,9 @@ private:
 
     float deltaTime = 0;
     float lastFrame = 0;
+
+    void initWindow();
+    void initVulkan();
 
     void computeShader(std::vector<VkSemaphore>& waitSemaphores, std::vector<VkPipelineStageFlags>& waitStages);
 

@@ -7,7 +7,7 @@
 
 struct Vertex {
     alignas(16) glm::vec3 pos;
-    alignas(16) glm::vec3 color;
+    alignas(16) glm::vec3 normal;
     alignas(16) glm::vec2 texCoord;
 
     static VkVertexInputBindingDescription getBindingDescription() {
@@ -30,7 +30,7 @@ struct Vertex {
         attributeDescriptions[1].binding = 0;
         attributeDescriptions[1].location = 1;
         attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescriptions[1].offset = offsetof(Vertex, color);
+        attributeDescriptions[1].offset = offsetof(Vertex, normal);
 
         attributeDescriptions[2].binding = 0;
         attributeDescriptions[2].location = 2;

@@ -4,8 +4,10 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
+#include "engine/mesh.h"
 #include "graphics/uniform_buffer.h"
 #include "graphics/block_update.h"
+#include "graphics/allocator.h"
 
 class Buffer;
 
@@ -16,9 +18,7 @@ public:
         return instance;
     }
 
-    void createVertexBuffer();
-    void createIndexBuffer();
-    void createComputeBuffer();
+    void createBuffers();
     void cleanupBuffers();
 
     void createUniformBuffers();
@@ -29,20 +29,25 @@ public:
     void printVertexBuffer(size_t size);
     void printIndexBuffer(size_t size);
 
+    static void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+    static void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkDeviceSize srcOffset, VkDeviceSize dstOffset);
+    static VkCommandBuffer beginSingleTimeCommands();
+    static void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+
+    static void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+    static uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 
-
-
-    Buffer& getVertexBuffers()     { return vertexBuffer; }
-    Buffer& getIndexBuffers()      { return indexBuffer; }
+    Buffer& getVertexBuffers()     { return allocator.getVertexBuffer(); }
+    Buffer& getIndexBuffers()      { return allocator.getIndexBuffer(); }
     Buffer& getVoxelBuffer()       { return voxelBuffer; }
     Buffer& getUpdateVoxelBuffer() { return updateVoxelBuffer; }
+    Allocator& getAllocator()      { return allocator; }
     UniformBuffer& getUniformBuffer(int i)   { return uniformBuffers[i]; }
 
 
 private:
-    Buffer vertexBuffer;
-    Buffer indexBuffer;
+    Allocator allocator;
     Buffer voxelBuffer;
     Buffer updateVoxelBuffer;
     std::vector<UniformBuffer> uniformBuffers;

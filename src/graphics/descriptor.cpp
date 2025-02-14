@@ -3,7 +3,7 @@
 #include <iostream>
 #include <array>
 
-#include "graphics/config.h"
+#include "core/config.h"
 #include "graphics/buffer.h"
 #include "graphics/device.h"
 #include "graphics/graphic_pipeline.h"

@@ -23,8 +23,8 @@
 #include <glm/ext/matrix_clip_space.hpp>
 
 void debug(VulkanApp* app) {
-    BufferManager::get().printVertexBuffer(100*4);
-    BufferManager::get().printIndexBuffer(100*6);
+    BufferManager::get().printVertexBuffer(16*2*4);
+    BufferManager::get().printIndexBuffer(16*2*6);
 }
 
 
@@ -67,9 +67,7 @@ void VulkanApp::initVulkan() {
     Texture::get().createTextureImageView();
     Texture::get().createTextureSampler();
 
-    BufferManager::get().createVertexBuffer();
-    BufferManager::get().createIndexBuffer();
-    BufferManager::get().createComputeBuffer();
+    BufferManager::get().createBuffers();
     BufferManager::get().createUniformBuffers();
 
     Descriptor::get().createDescriptorPool();
@@ -80,33 +78,25 @@ void VulkanApp::initVulkan() {
     Renderer::get().createSyncObjects();
 } 
 
-void VulkanApp::mainLoop() {
-    while (!glfwWindowShouldClose(window)) {
-        updateDeltaTime();
-        glfwPollEvents();
-        camera.update(deltaTime);
-        drawFrame();
-    }
-
-    vkDeviceWaitIdle(Device::get().getDevice());
+void VulkanApp::render() {
+    updateDeltaTime();
+    glfwPollEvents();
+    camera.update(deltaTime);
+    drawFrame();
 }
 
-void VulkanApp::run() {
+void VulkanApp::init() {
     initWindow();
     initVulkan();
 
     camera.updateProjection(Swapchain::get().getAspectRatio());
-    
-    mainLoop();
-
-    // debug(this);
-
-    vkDeviceWaitIdle(Device::get().getDevice());
-    
-    cleanup();
 }
 
 void VulkanApp::cleanup() {
+    debug(this);
+
+    vkDeviceWaitIdle(Device::get().getDevice());
+
     Swapchain::get().cleanup();
     GraphicPipeline::get().cleanup();
     ComputePipeline::get().cleanup();
@@ -128,7 +118,7 @@ void VulkanApp::drawFrame() {
     std::vector<VkSemaphore> waitSemaphores = {Renderer::get().getCurrentImageAvailableSemaphores()};
     std::vector<VkPipelineStageFlags> waitStages = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
-    if (!generated) computeShader(waitSemaphores, waitStages);
+    // if (!generated) computeShader(waitSemaphores, waitStages);
 
     vkWaitForFences(Device::get().getDevice(), 1, &Renderer::get().getCurrentInFlightFences(), VK_TRUE, UINT64_MAX);
 
@@ -239,7 +229,7 @@ void VulkanApp::recordCommandBuffer(uint32_t imageIndex) {
         vkCmdBindIndexBuffer(Renderer::get().getCurrentCommandBuffers(), BufferManager::get().getIndexBuffers().getBuffer(), 0, VK_INDEX_TYPE_UINT32);
         vkCmdBindDescriptorSets(Renderer::get().getCurrentCommandBuffers(), VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicPipeline::get().getPipelineLayout(), 0, 1, &(Descriptor::get().getDescriptorSets())[Renderer::get().getCurrentFrame()], 0, nullptr);
 
-        vkCmdDrawIndexed(Renderer::get().getCurrentCommandBuffers(), 6*blockUpdate.size(), 1, 0, 0, 0); // Va faloir changer ça (recup le nb de face a afficher), le 2eme arg c'est le nb d'index
+        vkCmdDrawIndexed(Renderer::get().getCurrentCommandBuffers(), 16*3*6, 1, 0, 0, 0); // Va faloir changer ça (recup le nb de face a afficher), le 2eme arg c'est le nb d'index
 
     vkCmdEndRenderPass(Renderer::get().getCurrentCommandBuffers());
 

@@ -4,8 +4,8 @@
 #include <set>
 
 #include "graphics/instance.h"
-#include "graphics/buffer.h"
 #include "graphics/swapchain.h"
+#include "graphics/buffer_manager.h"
 
 const std::vector<const char*> deviceExtensions = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
@@ -76,7 +76,7 @@ void Device::createLogicalDevice() {
 void Device::createDepthResources() {
     VkFormat depthFormat = findDepthFormat();
 
-    Buffer::createImage(Swapchain::get().getSwapChainExtent().width, Swapchain::get().getSwapChainExtent().height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
+    BufferManager::createImage(Swapchain::get().getSwapChainExtent().width, Swapchain::get().getSwapChainExtent().height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
     depthImageView = Swapchain::get().createImageView(depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 

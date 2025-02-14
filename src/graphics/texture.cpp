@@ -5,7 +5,7 @@
 
 #include <stdexcept>
 
-#include "graphics/buffer.h"
+#include "graphics/buffer_manager.h"
 #include "graphics/device.h"
 #include "graphics/swapchain.h"
 
@@ -28,7 +28,7 @@ void Texture::createTextureImage() {
 
     stbi_image_free(pixels);
 
-    Buffer::createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+    BufferManager::createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
 
     transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         copyBufferToImage(stagingBuffer.getBuffer(), textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
@@ -74,7 +74,7 @@ void Texture::cleanup() {
 }
 
 void Texture::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
-    VkCommandBuffer commandBuffer = Buffer::beginSingleTimeCommands();
+    VkCommandBuffer commandBuffer = BufferManager::beginSingleTimeCommands();
 
     VkImageMemoryBarrier barrier{};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -117,11 +117,11 @@ void Texture::transitionImageLayout(VkImage image, VkFormat format, VkImageLayou
         1, &barrier
     );
 
-    Buffer::endSingleTimeCommands(commandBuffer);
+    BufferManager::endSingleTimeCommands(commandBuffer);
 }
 
 void Texture::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) {
-    VkCommandBuffer commandBuffer = Buffer::beginSingleTimeCommands();
+    VkCommandBuffer commandBuffer = BufferManager::beginSingleTimeCommands();
 
     VkBufferImageCopy region{};
     region.bufferOffset = 0;
@@ -140,5 +140,5 @@ void Texture::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, 
 
     vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-    Buffer::endSingleTimeCommands(commandBuffer);
+    BufferManager::endSingleTimeCommands(commandBuffer);
 }
