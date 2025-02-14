@@ -24,18 +24,29 @@ public:
 
     void cleanup();
 
-    Buffer& getVertexBuffer() { return vertex; }
-    Buffer& getIndexBuffer()  { return index; }
-    int     getNumberVertex() { return vertexOffset; }
-    int     getNumberIndex()  { return indexOffset; }
+    Buffer& getVertexBuffer()   { return vertex; }
+    Buffer& getIndexBuffer()    { return index; }
+    Buffer& getIndirectBuffer() { return indirect; }
+    int     getVertexOffset()   { return vertexOffset; }
+    int     getIndexOffset()    { return indexOffset; }
+    int     getIndirectOffset() { return indirectOffset; }
+    // int     getNumberVertex()   { return vertexOffset; }
+    int     getNumberIndex()    { return indexCount; }
+    int     getNumberIndirect() { return indirectCount; }
+
+    void debugOffset();
 
 private:
     Buffer vertex;
     Buffer index;
+    Buffer indirect;
 
     int vertexOffset;
     int indexOffset;
+    int indirectOffset;
+    int vertexCount;
     int indexCount;
+    int indirectCount;
 
     void allocData(VkBuffer dstBuffer, void* pdata, size_t sizeData, int offset);
 };

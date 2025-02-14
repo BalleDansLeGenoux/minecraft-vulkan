@@ -25,6 +25,7 @@
 void debug(VulkanApp* app) {
     BufferManager::get().printVertexBuffer(16*2*4);
     BufferManager::get().printIndexBuffer(16*2*6);
+    BufferManager::get().printIndirectBuffer(5);
 }
 
 
@@ -229,7 +230,15 @@ void VulkanApp::recordCommandBuffer(uint32_t imageIndex) {
         vkCmdBindIndexBuffer(Renderer::get().getCurrentCommandBuffers(), BufferManager::get().getIndexBuffers().getBuffer(), 0, VK_INDEX_TYPE_UINT32);
         vkCmdBindDescriptorSets(Renderer::get().getCurrentCommandBuffers(), VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicPipeline::get().getPipelineLayout(), 0, 1, &(Descriptor::get().getDescriptorSets())[Renderer::get().getCurrentFrame()], 0, nullptr);
 
-        vkCmdDrawIndexed(Renderer::get().getCurrentCommandBuffers(), 16*3*6, 1, 0, 0, 0); // Va faloir changer ça (recup le nb de face a afficher), le 2eme arg c'est le nb d'index
+        // vkCmdDrawIndexed(Renderer::get().getCurrentCommandBuffers(), BufferManager::get().getAllocator().getNumberIndex(), 1, 0, 0, 0); // Va faloir changer ça (recup le nb de face a afficher), le 2eme arg c'est le nb d'index
+
+        vkCmdDrawIndexedIndirect(
+            Renderer::get().getCurrentCommandBuffers(),
+            BufferManager::get().getAllocator().getIndirectBuffer().getBuffer(),  // Buffer contenant les commandes
+            0,                                                                    // Offset du premier DrawIndirectCommand
+            BufferManager::get().getAllocator().getNumberIndirect(),              // Nombre de draw calls (10 dans ton cas)
+            sizeof(DrawIndirectCommand)                                           // Taille d’une commande
+        );
 
     vkCmdEndRenderPass(Renderer::get().getCurrentCommandBuffers());
 

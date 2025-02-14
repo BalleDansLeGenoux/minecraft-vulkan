@@ -24,38 +24,56 @@ void Allocator::init() {
                             VK_BUFFER_USAGE_TRANSFER_DST_BIT |
                             VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
                             VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
-                            VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+                            VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+                            VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT,
+                            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+    );
+
+    indirect.createBuffer(bufferSize,
+                            VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT |
+                            VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
     );
 
     vertexOffset = 0;
     indexOffset = 0;
+    indirectOffset = 0;
+    vertexCount = 0;
     indexCount = 0;
+    indirectCount = 0;
 }
 
 DrawIndirectCommand Allocator::allocMesh(Mesh& mesh) {
-    // a modif pour vkCmdDrawIndexedIndirect
     auto pvertex = mesh.getVertex();
     auto pindex = mesh.getIndex();
 
-    for (uint32_t& data : pindex) {
-        data += indexCount/1.5;
-    }
+    std::cout << pindex.size() << std::endl; 
+
+    // Alloc Indirect
+
+    VkDeviceSize size = sizeof(DrawIndirectCommand);
 
     DrawIndirectCommand allocInfo;
     allocInfo.indexCount = pindex.size();
     allocInfo.instanceCount = 1;
-    allocInfo.indexOffset = indexOffset;
-    allocInfo.vertexOffset = vertexOffset;
+    allocInfo.indexOffset = indexCount;
+    allocInfo.vertexOffset = vertexCount;
     allocInfo.firstInstance = 0;
+
+    allocData(indirect.getBuffer(), &allocInfo, size, indirectOffset);
+
+    indirectOffset += size;
+    indirectCount++;
 
     // Alloc Vertex
 
-    VkDeviceSize size = pvertex.size() * sizeof(Vertex);
+    size = pvertex.size() * sizeof(Vertex);
 
     allocData(vertex.getBuffer(), pvertex.data(), size, vertexOffset);
 
     vertexOffset += size;
+    vertexCount += pvertex.size();
 
     // Alloc Index
 
@@ -70,6 +88,7 @@ DrawIndirectCommand Allocator::allocMesh(Mesh& mesh) {
 }
 
 void Allocator::allocData(VkBuffer dstBuffer, void* pdata, size_t sizeData, int offset) {
+
     Buffer staging;
     staging.createBuffer(sizeData,
                         VK_BUFFER_USAGE_TRANSFER_DST_BIT |
@@ -91,4 +110,11 @@ void Allocator::allocData(VkBuffer dstBuffer, void* pdata, size_t sizeData, int 
 void Allocator::cleanup() {
     vertex.cleanup();
     index.cleanup();
+    indirect.cleanup();
+}
+
+void Allocator::debugOffset() {
+    std::cout << "Offset vertex   : " << vertexOffset << std::endl;
+    std::cout << "Offset index    : " << indexOffset << std::endl;
+    std::cout << "Offset indirect : " << indirectOffset << std::endl;
 }

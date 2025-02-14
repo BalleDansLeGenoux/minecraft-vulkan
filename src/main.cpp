@@ -8,26 +8,28 @@
 #include <iostream>
 
 #include "graphics/app.h"
+#include "world/chunk_manager.h"
 
 void run(VulkanApp& app) {
     app.init();
 
-    Chunk chunk({0, 0, 0});
-    Chunk chunk2({1, 0, 0});
-    Chunk chunk3({2, 0, 0});
-    chunk.init();
-    chunk2.init();
-    chunk3.init();
+    ChunkManager chunks;
+
+    for (int i = 0; i < 1; i++) {
+    for (int j = 0; j < 2; j++) {
+
+    Chunk& chunk = chunks.addChunk({i, 0, j});
 
     for (int x = 0; x < CHUNK_SIZE; x++) {
-        chunk.addVoxel({x, 0, 0}, 1);
-        chunk2.addVoxel({x, 1, 1}, 1);
-        chunk3.addVoxel({x, 0, 1}, 1);
+        for (int z = 0; z < CHUNK_SIZE; z++) {
+            chunk.addVoxel({x, 0, z}, 1);
+        }
     }
 
-    chunk.updateMesh();
-    chunk2.updateMesh();
-    chunk3.updateMesh();
+    }
+    }
+
+    chunks.update();
 
     while (app.isRun()) {
         app.render();
@@ -39,17 +41,6 @@ void run(VulkanApp& app) {
 int main(int argc, char const *argv[])
 {
     std::vector<BlockUpdate> tmp;
-
-    // BlockUpdate a;
-
-    // for (int x = 0; x < 10; x++) {
-    //     for (int z = 0; z < 10; z++) {
-    //         a.chunkPos = glm::ivec4(0, 0, 0, 0);
-    //         a.blockPos = glm::uvec4(x, 0, z, 0);
-    //         a.blockID = glm::uvec4(69, 0, 0, 0);
-    //         tmp.push_back(a);
-    //     }
-    // }
 
 
 

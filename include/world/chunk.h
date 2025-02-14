@@ -10,6 +10,8 @@
 
 class Chunk {
 public:
+    Chunk() {}
+    
     Chunk(glm::ivec3 ppos)
     : pos(ppos) {}
 

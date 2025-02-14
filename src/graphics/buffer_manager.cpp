@@ -119,6 +119,34 @@ void BufferManager::printIndexBuffer(size_t sizeToPrint) {
     stagingBuffer.cleanup();
 }
 
+
+void BufferManager::printIndirectBuffer(size_t sizeToPrint) {
+    VkDeviceSize bufferSize = sizeof(DrawIndirectCommand) * sizeToPrint;
+    
+    Buffer stagingBuffer;
+    stagingBuffer.createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+    copyBuffer(BufferManager::get().getAllocator().getIndirectBuffer().getBuffer(), stagingBuffer.getBuffer(), bufferSize);
+
+    void* data;
+    vkMapMemory(Device::get().getDevice(), stagingBuffer.getBufferMemory(), 0, bufferSize, 0, &data);
+    DrawIndirectCommand* resultData = static_cast<DrawIndirectCommand*>(data);
+
+    std::cout << "Indirect Buffer -> Byte print : " << bufferSize << std::endl;
+
+    for (int i = 0; i < sizeToPrint; ++i) {
+        std::cout << "  DrawIndirectCommand [" << i << "].firstInstance = " << resultData[i].firstInstance << std::endl;
+        std::cout << "  DrawIndirectCommand [" << i << "].indexCount = " << resultData[i].indexCount << std::endl;
+        std::cout << "  DrawIndirectCommand [" << i << "].indexOffset = " << resultData[i].indexOffset << std::endl;
+        std::cout << "  DrawIndirectCommand [" << i << "].vertexOffset = " << resultData[i].vertexOffset << std::endl;
+        std::cout << "  DrawIndirectCommand [" << i << "].instanceCount = " << resultData[i].instanceCount << std::endl << std::endl;
+    }
+
+    vkUnmapMemory(Device::get().getDevice(), stagingBuffer.getBufferMemory());
+    
+    stagingBuffer.cleanup();
+}
+
 void BufferManager::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
     VkImageCreateInfo imageInfo{};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;

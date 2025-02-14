@@ -28,6 +28,7 @@ public:
     void updateUpdateVoxelBuffer(std::vector<BlockUpdate>& blockUpdate); // tmp
     void printVertexBuffer(size_t size);
     void printIndexBuffer(size_t size);
+    void printIndirectBuffer(size_t sizeToPrint);
 
     static void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
     static void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkDeviceSize srcOffset, VkDeviceSize dstOffset);
