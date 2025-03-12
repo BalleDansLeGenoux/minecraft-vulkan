@@ -16,14 +16,25 @@ public:
     
     void clear();
 
-    std::vector<Vertex>& getVertex() { return vertex; }
-    std::vector<uint32_t>& getIndex() { return index; }
+    std::vector<Vertex>&   getVertex() { return vertex; }
+    std::vector<uint32_t>& getIndex()  { return index; }
 
 private:
     std::vector<Vertex> vertex;
     std::vector<uint32_t> index;
 
     void addQuad(glm::vec3 pos, glm::vec3 normal, glm::vec2 uv);
+
+    void addUpQuad(glm::vec3 pos, glm::vec3 normal, glm::vec2 uv);
+    void addDownQuad(glm::vec3 pos, glm::vec3 normal, glm::vec2 uv);
+
+    void addRightQuad(glm::vec3 pos, glm::vec3 normal, glm::vec2 uv);
+    void addLeftQuad(glm::vec3 pos, glm::vec3 normal, glm::vec2 uv);
+
+    void addFrontQuad(glm::vec3 pos, glm::vec3 normal, glm::vec2 uv);
+    void addBackQuad(glm::vec3 pos, glm::vec3 normal, glm::vec2 uv);
+
+    void addIndex();
 };
 
 #endif

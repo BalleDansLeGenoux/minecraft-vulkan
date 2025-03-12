@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <glm/glm.hpp>
+#include <memory>
 
 #include "world/chunk.h"
 
@@ -14,12 +15,12 @@ public:
 
     void update();
 
-    Chunk& getChunk(glm::ivec3 pos) { return chunks[getStringFromIvec(pos)]; };
+    static std::string getStringFromIvec(glm::ivec3 v);
+
+    Chunk& getChunk(glm::ivec3 pos) { return *chunks[getStringFromIvec(pos)]; };
 
 private:
-    std::unordered_map<std::string, Chunk> chunks;
-
-    std::string getStringFromIvec(glm::ivec3 v);
+    std::unordered_map<std::string, std::unique_ptr<Chunk>> chunks;
 };
 
 #endif

@@ -13,18 +13,23 @@ public:
     Chunk() {}
     
     Chunk(glm::ivec3 ppos)
-    : pos(ppos) {}
+    : pos(ppos), allocId(-1) {}
 
     void init();
     void addVoxel(glm::ivec3 pos, Voxel voxel);
     void updateMesh();
+    void cleanup();
+
+    glm::ivec3 getPos()             { return pos; }
+    int        getAllocInfoOffset() { return allocId; }
+
 private:
     glm::ivec3 pos;
 
     Voxel voxels[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
     Mesh mesh;
 
-    DrawIndirectCommand allocInfo;
+    int allocId;
 };
 
 #endif

@@ -23,9 +23,10 @@
 #include <glm/ext/matrix_clip_space.hpp>
 
 void debug(VulkanApp* app) {
-    BufferManager::get().printVertexBuffer(16*2*4);
-    BufferManager::get().printIndexBuffer(16*2*6);
-    BufferManager::get().printIndirectBuffer(5);
+    // BufferManager::get().printVertexBuffer(BufferManager::get().getAllocator().getVertexCount()+1);
+    BufferManager::get().printVertexBuffer(50);
+    // BufferManager::get().printIndexBuffer(BufferManager::get().getAllocator().getIndexCount()+1);
+    BufferManager::get().printIndirectBuffer(BufferManager::get().getAllocator().getIndirectCount()+1);
 }
 
 
@@ -199,7 +200,7 @@ void VulkanApp::recordCommandBuffer(uint32_t imageIndex) {
     renderPassInfo.renderArea.extent = Swapchain::get().getSwapChainExtent();
 
     std::array<VkClearValue, 2> clearValues{};
-    clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+    clearValues[0].color = {{0.0f, 0.0f, 1.0f, 1.0f}};
     clearValues[1].depthStencil = {1.0f, 0};
 
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
@@ -236,7 +237,7 @@ void VulkanApp::recordCommandBuffer(uint32_t imageIndex) {
             Renderer::get().getCurrentCommandBuffers(),
             BufferManager::get().getAllocator().getIndirectBuffer().getBuffer(),  // Buffer contenant les commandes
             0,                                                                    // Offset du premier DrawIndirectCommand
-            BufferManager::get().getAllocator().getNumberIndirect(),              // Nombre de draw calls (10 dans ton cas)
+            BufferManager::get().getAllocator().getIndirectCount(),               // Nombre de draw calls (10 dans ton cas)
             sizeof(DrawIndirectCommand)                                           // Taille d’une commande
         );
 

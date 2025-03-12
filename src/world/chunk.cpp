@@ -1,6 +1,9 @@
 #include "world/chunk.h"
 
+#include <iostream>
+
 #include "graphics/buffer_manager.h"
+#include "world/chunk_manager.h"
 
 void Chunk::init() {
     for (int x = 0; x < CHUNK_SIZE; x++) {
@@ -18,5 +21,13 @@ void Chunk::addVoxel(glm::ivec3 pos, Voxel voxel) {
 
 void Chunk::updateMesh() {
     mesh.cullingMeshing(pos, voxels);
-    allocInfo = BufferManager::get().getAllocator().allocMesh(mesh);
+    allocId = BufferManager::get().getAllocator().allocMesh(mesh, allocId);
+    std::cout << "POS : " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
+    std::cout << "ID  : " << allocId << std::endl << std::endl;
+}
+
+void Chunk::cleanup() {
+    BufferManager::get().getAllocator().freeMesh(allocId);
+    std::cout << "POS : " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
+    std::cout << "ID  : " << allocId << std::endl;
 }
