@@ -9,87 +9,35 @@
 
 #include "graphics/app.h"
 #include "world/chunk_manager.h"
+#include "world/procedural_generator.h"
+
+void procedural() {
+    int size = 16;
+    ProceduralGenerator p;
+    for (int x = -(size/2); x < size/2; x++) {
+        for (int y = -(size/2); y < size/2; y++) {
+            p.generateChunk({x, y});
+        }
+    }
+    ChunkManager::get().update();
+}
 
 void run(VulkanApp& app) {
     app.init();
 
-    ChunkManager chunks;
+    // ------------------------ Temps Allocation ------------------------ //
 
-    for (int i = 0; i < 2; i++) {
-        for (int j = 0; j < 2; j++) {
-            Chunk& chunk = chunks.addChunk({i, 0, j});
+    auto start = std::chrono::high_resolution_clock::now();  // Début
+    // allocate(chunks);
+    procedural();
+    auto end = std::chrono::high_resolution_clock::now();    // Fin
 
-            for (int x = 0; x < 16; x++) {
-                for (int y = 0; y < 1; y++) {
-                    for (int z = 0; z < 16; z++) {
-                        chunk.addVoxel({x, y, z}, 1);
-                    }
-                }
-            }
-        }
-    }
+    // Calcul du temps en millisecondes
+    std::chrono::duration<double, std::milli> elapsed = end - start;
+    
+    std::cout << "Temps d'exécution : " << elapsed.count() << " ms" << std::endl;
 
-    // {
-    // Chunk& chunk = chunks.addChunk({0, 0, 0});
-
-    // for (int x = 0; x < CHUNK_SIZE; x++) {
-    //     for (int z = 0; z < CHUNK_SIZE; z++) {
-    //         chunk.addVoxel({x, 0, z}, 1);
-    //     }
-    // }
-    // }
-
-    // {
-    // Chunk& chunk = chunks.addChunk({1, 0, 0});
-
-    // for (int x = 0; x < CHUNK_SIZE; x++) {
-    //     for (int z = 0; z < CHUNK_SIZE; z++) {
-    //         chunk.addVoxel({x, 1, z}, 1);
-    //     }
-    // }
-    // }
-
-    // {
-    // Chunk& chunk = chunks.addChunk({1, 0, 1});
-
-    // for (int x = 0; x < CHUNK_SIZE; x++) {
-    //     for (int z = 0; z < CHUNK_SIZE; z++) {
-    //         chunk.addVoxel({x, 2, z}, 1);
-    //     }
-    // }
-    // }
-
-    // {
-    // Chunk& chunk = chunks.addChunk({0, 0, 1});
-
-    // for (int x = 0; x < CHUNK_SIZE; x++) {
-    //     for (int z = 0; z < CHUNK_SIZE; z++) {
-    //         chunk.addVoxel({x, 3, z}, 1);
-    //     }
-    // }
-    // }
-
-    chunks.update();
-
-    chunks.removeChunk({1, 0, 1});
-
-    Chunk& chunk = chunks.getChunk({0, 0, 0});
-
-    chunk.addVoxel({0, 1, 0}, 1);
-
-    chunk.updateMesh();
-
-    chunk = chunks.addChunk({2, 0, 1});
-
-    for (int x = 0; x < 16; x++) {
-        for (int y = 0; y < 1; y++) {
-            for (int z = 0; z < 16; z++) {
-                chunk.addVoxel({x, y, z}, 1);
-            }
-        }
-    }
-
-    chunk.updateMesh();
+    // ------------------------------------------------------------------ //
 
     while (app.isRun()) {
         app.render();
@@ -102,7 +50,7 @@ int main(int argc, char const *argv[])
 {
     std::vector<BlockUpdate> tmp;
 
-    VulkanApp app({0, 3.0f, 0}, 70, tmp);
+    VulkanApp app({0, 150.0f, 0}, 70, tmp);
 
     try {
         run(app);

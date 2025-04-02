@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <vector>
 #include <memory>
+#include <optional>
 #include <glm/glm.hpp>
 #include <unordered_map>
 
@@ -11,59 +12,28 @@
 #include "graphics/vertex.h"
 #include "engine/mesh.h"
 
-struct DrawIndirectCommand {
-    uint32_t indexCount;    // Nombre d'indices à dessiner
-    uint32_t instanceCount; // Toujours 1 pour du voxel
-    uint32_t indexOffset;   // Offset dans l’index buffer
-    uint32_t vertexOffset;  // Offset dans le vertex buffer
-    uint32_t firstInstance; // Toujours 0 dans ce cas
-};
-
-struct AllocInfo {
-    uint32_t vertexOffset;
-    uint32_t vertexMax;
-    uint32_t indexOffset;
-    uint32_t indexMax;
-    uint32_t indirectOffset;
-};
-
 class Allocator {
 public:
-    void init();
-    int  allocMesh(Mesh& mesh, int pid);
-    void freeMesh(int pid);
+    Allocator() {}
+    Allocator(int p_flag, uint32_t p_nbBlock, uint32_t p_blockSize, std::reference_wrapper<Buffer> p_staging);
+    
+    void alloc(void* p_data, uint32_t p_size, uint32_t p_offset);
+    void extractData(void* p_dst, uint32_t p_nbBlock, uint32_t p_offset);
 
     void cleanup();
 
-    Buffer& getVertexBuffer()   { return vertex; }
-    Buffer& getIndexBuffer()    { return index; }
-    Buffer& getIndirectBuffer() { return indirect; }
-    
-    int     getVertexCount()    { return vertexOffset; }
-    int     getIndexCount()     { return indexOffset; }
-    int     getIndirectCount()  { return indirectOffset; }
+    Allocator& operator=(const Allocator& other);
 
-    std::vector<AllocInfo>& getFreeList() { return freeList; }
-
-    void debugOffset();
+    Buffer& getBuffer() { return _buffer; };
+    uint32_t getBlockSize() { return _blockSize; }
 
 private:
-    Buffer vertex;
-    Buffer index;
-    Buffer indirect;
+    Buffer _buffer;
 
-    uint32_t vertexOffset;
-    uint32_t indexOffset;
-    uint32_t indirectOffset;
+    uint32_t _blockSize;
+    VkDeviceSize _size;
 
-    int id;
-
-    std::unordered_map<u_int32_t, AllocInfo> used;
-    std::vector<AllocInfo> freeList;
-
-    void allocData(VkBuffer dstBuffer, void* pdata, size_t sizeData, int offset);
-    void extractData(void* dstData, VkBuffer srcBuffer, size_t sizeData, int offset);
-    int availableAlloc(int sizeVertex);
+    std::optional<std::reference_wrapper<Buffer>> _staging;
 };
 
 #endif

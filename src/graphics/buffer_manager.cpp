@@ -12,7 +12,7 @@
 void BufferManager::createBuffers() {
     allocator.init();
 
-    VkDeviceSize bufferSize = SIZE_CHUNK_BUFFER;
+    VkDeviceSize bufferSize = 1;
 
     voxelBuffer.createBuffer(bufferSize,
                             VK_BUFFER_USAGE_TRANSFER_DST_BIT |
@@ -55,7 +55,7 @@ void BufferManager::cleanupUniformBuffer() {
 }
 
 void BufferManager::updateUpdateVoxelBuffer(std::vector<BlockUpdate>& blockUpdate) {
-    VkDeviceSize bufferSize = SIZE_CHUNK_BUFFER;
+    VkDeviceSize bufferSize = 1;
 
     Buffer stagingBuffer;
     stagingBuffer.createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
@@ -187,6 +187,7 @@ void BufferManager::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceS
 }
 
 void BufferManager::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkDeviceSize srcOffset, VkDeviceSize dstOffset) {
+    if (size <= 0) return;
     VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
     VkBufferCopy copyRegion{};

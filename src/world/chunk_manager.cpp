@@ -4,19 +4,19 @@
 
 #include "world/chunk_manager.h"
 
-Chunk& ChunkManager::addChunk(glm::ivec3 pos) {
+Chunk* ChunkManager::addChunk(glm::ivec3 pos) {
     std::string id = getStringFromIvec(pos);
     auto chunk = std::make_unique<Chunk>(pos);
     chunk->init();
     chunks[id] = std::move(chunk);
-    return *chunks[id];
+    return chunks[id].get();
 }
 
 void ChunkManager::removeChunk(glm::ivec3 pos) {
     std::string id = getStringFromIvec(pos);
-    Chunk& chunk = *chunks[id];
+    Chunk* chunk = chunks[id].get();
 
-    chunk.cleanup();
+    chunk->cleanup();
     chunks.erase(id);
 }
 
@@ -29,3 +29,13 @@ void ChunkManager::update() {
         chunk->updateMesh();
     }
 }
+
+Chunk* ChunkManager::getChunk(glm::ivec3 pos) {
+    std::string id = getStringFromIvec(pos);
+    auto it = chunks.find(id);
+    if (it == chunks.end() || !it->second) return nullptr;
+    return it->second.get();
+};
+
+
+// 35498

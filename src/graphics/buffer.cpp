@@ -13,10 +13,10 @@
 #include "graphics/swapchain.h" 
 #include "graphics/buffer_manager.h"
 
-void Buffer::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) {
+void Buffer::createBuffer(VkDeviceSize psize, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) {
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = size;
+    bufferInfo.size = psize;
     bufferInfo.usage = usage;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
@@ -37,6 +37,8 @@ void Buffer::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryP
     }
 
     vkBindBufferMemory(Device::get().getDevice(), buffer, bufferMemory, 0);
+
+    size = psize;
 }
 
 void Buffer::cleanup() {

@@ -18,6 +18,7 @@ public:
 
     std::vector<Vertex>&   getVertex() { return vertex; }
     std::vector<uint32_t>& getIndex()  { return index; }
+    bool isEmpty() { return (!vertex.size()); }
 
 private:
     std::vector<Vertex> vertex;

@@ -21,13 +21,10 @@ void Chunk::addVoxel(glm::ivec3 pos, Voxel voxel) {
 
 void Chunk::updateMesh() {
     mesh.cullingMeshing(pos, voxels);
+    if (mesh.isEmpty()) return;
     allocId = BufferManager::get().getAllocator().allocMesh(mesh, allocId);
-    std::cout << "POS : " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
-    std::cout << "ID  : " << allocId << std::endl << std::endl;
 }
 
 void Chunk::cleanup() {
     BufferManager::get().getAllocator().freeMesh(allocId);
-    std::cout << "POS : " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
-    std::cout << "ID  : " << allocId << std::endl;
 }

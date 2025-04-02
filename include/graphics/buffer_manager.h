@@ -7,7 +7,7 @@
 #include "engine/mesh.h"
 #include "graphics/uniform_buffer.h"
 #include "graphics/block_update.h"
-#include "graphics/allocator.h"
+#include "graphics/allocators_manager.h"
 
 class Buffer;
 
@@ -43,12 +43,12 @@ public:
     Buffer& getIndexBuffers()      { return allocator.getIndexBuffer(); }
     Buffer& getVoxelBuffer()       { return voxelBuffer; }
     Buffer& getUpdateVoxelBuffer() { return updateVoxelBuffer; }
-    Allocator& getAllocator()      { return allocator; }
+    AllocatorManager& getAllocator()      { return allocator; }
     UniformBuffer& getUniformBuffer(int i)   { return uniformBuffers[i]; }
 
 
 private:
-    Allocator allocator;
+    AllocatorManager allocator;
     Buffer voxelBuffer;
     Buffer updateVoxelBuffer;
     std::vector<UniformBuffer> uniformBuffers;

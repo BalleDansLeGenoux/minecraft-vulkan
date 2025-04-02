@@ -24,9 +24,9 @@
 
 void debug(VulkanApp* app) {
     // BufferManager::get().printVertexBuffer(BufferManager::get().getAllocator().getVertexCount()+1);
-    BufferManager::get().printVertexBuffer(50);
+    // BufferManager::get().printVertexBuffer(50);
     // BufferManager::get().printIndexBuffer(BufferManager::get().getAllocator().getIndexCount()+1);
-    BufferManager::get().printIndirectBuffer(BufferManager::get().getAllocator().getIndirectCount()+1);
+    // BufferManager::get().printIndirectBuffer(BufferManager::get().getAllocator().getIndirectCount()+1);
 }
 
 

@@ -16,10 +16,12 @@ public:
 
     VkBuffer& getBuffer() { return buffer; }
     VkDeviceMemory& getBufferMemory() { return bufferMemory; }
+    VkDeviceSize getSize() { return size; }
 
 private:
     VkBuffer buffer;
     VkDeviceMemory bufferMemory;
+    VkDeviceSize size;
 };
 
 #endif // BUFFER_MANAGER_HPP

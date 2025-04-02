@@ -10,14 +10,19 @@
 
 class ChunkManager {
 public:
-    Chunk& addChunk(glm::ivec3 pos);
+    static ChunkManager& get() {
+        static ChunkManager instance;
+        return instance;
+    }
+
+    Chunk* addChunk(glm::ivec3 pos);
     void removeChunk(glm::ivec3 pos);
 
     void update();
 
     static std::string getStringFromIvec(glm::ivec3 v);
 
-    Chunk& getChunk(glm::ivec3 pos) { return *chunks[getStringFromIvec(pos)]; };
+    Chunk* getChunk(glm::ivec3 pos);
 
 private:
     std::unordered_map<std::string, std::unique_ptr<Chunk>> chunks;
