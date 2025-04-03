@@ -8,6 +8,8 @@
 #include "core/config.h"
 #include "world/voxel.h"
 #include "graphics/vertex.h"
+#include "engine/face_position.h"
+#include "engine/texture_coord.h"
 
 class Mesh {
 public:
@@ -24,17 +26,7 @@ private:
     std::vector<Vertex> vertex;
     std::vector<uint32_t> index;
 
-    void addQuad(glm::vec3 pos, glm::vec3 normal, glm::vec2 uv);
-
-    void addUpQuad(glm::vec3 pos, glm::vec3 normal, glm::vec2 uv);
-    void addDownQuad(glm::vec3 pos, glm::vec3 normal, glm::vec2 uv);
-
-    void addRightQuad(glm::vec3 pos, glm::vec3 normal, glm::vec2 uv);
-    void addLeftQuad(glm::vec3 pos, glm::vec3 normal, glm::vec2 uv);
-
-    void addFrontQuad(glm::vec3 pos, glm::vec3 normal, glm::vec2 uv);
-    void addBackQuad(glm::vec3 pos, glm::vec3 normal, glm::vec2 uv);
-
+    void addQuad(glm::vec3 pos, FacePosition face_pos, glm::vec3 normal, FaceTextureCoord uv);
     void addIndex();
 };
 

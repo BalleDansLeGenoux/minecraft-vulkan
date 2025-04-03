@@ -2,8 +2,6 @@
 
 #include <iostream>
 
-#include "world/chunk_manager.h"
-
 Chunk* ChunkManager::addChunk(glm::ivec3 pos) {
     std::string id = getStringFromIvec(pos);
     auto chunk = std::make_unique<Chunk>(pos);
@@ -36,6 +34,3 @@ Chunk* ChunkManager::getChunk(glm::ivec3 pos) {
     if (it == chunks.end() || !it->second) return nullptr;
     return it->second.get();
 };
-
-
-// 35498
