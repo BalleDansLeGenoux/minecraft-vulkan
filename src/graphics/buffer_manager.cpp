@@ -29,13 +29,6 @@ void BufferManager::createBuffers() {
     );
 }
 
-void BufferManager::cleanupBuffers() {
-    allocator.cleanup();
-    voxelBuffer.cleanup();
-    updateVoxelBuffer.cleanup();
-}
-
-
 void BufferManager::createUniformBuffers() {
     uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 
@@ -46,105 +39,6 @@ void BufferManager::createUniformBuffers() {
 
 void BufferManager::updateUniformBuffer(glm::mat4 matrix) {
     uniformBuffers.at(Renderer::get().getCurrentFrame()).updateUniformBuffer(matrix);
-}
-
-void BufferManager::cleanupUniformBuffer() {
-    for (auto ubo : uniformBuffers) {
-        ubo.cleanup();
-    }
-}
-
-void BufferManager::updateUpdateVoxelBuffer(std::vector<BlockUpdate>& blockUpdate) {
-    VkDeviceSize bufferSize = 1;
-
-    Buffer stagingBuffer;
-    stagingBuffer.createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-    void* data;
-    vkMapMemory(Device::get().getDevice(), stagingBuffer.getBufferMemory(), 0, bufferSize, 0, &data);
-        memcpy(data, blockUpdate.data(), (size_t) bufferSize);
-    vkUnmapMemory(Device::get().getDevice(), stagingBuffer.getBufferMemory());
-
-    copyBuffer(stagingBuffer.getBuffer(), updateVoxelBuffer.getBuffer(), bufferSize);
-
-    stagingBuffer.cleanup();
-}
-
-void BufferManager::printVertexBuffer(size_t sizeToPrint) {
-    VkDeviceSize bufferSize = sizeof(Vertex) * sizeToPrint;
-    
-    Buffer stagingBuffer;
-    stagingBuffer.createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-    copyBuffer(BufferManager::get().getVertexBuffers().getBuffer(), stagingBuffer.getBuffer(), bufferSize);
-
-    void* data;
-    vkMapMemory(Device::get().getDevice(), stagingBuffer.getBufferMemory(), 0, bufferSize, 0, &data);
-    Vertex* resultData = static_cast<Vertex*>(data);
-
-    std::cout << "Vertex Buffer -> Byte print : " << bufferSize << std::endl;
-
-    for (int i = 0; i < sizeToPrint; ++i) {
-        std::cout << "  pos      [" << i << "] = " << resultData[i].pos.x << " | " << resultData[i].pos.y << " | " << resultData[i].pos.z << std::endl;
-        // std::cout << "  color    [" << i << "] = " << resultData[i].normal.x << " | " << resultData[i].normal.y << " | " << resultData[i].normal.z << std::endl;
-        // std::cout << "  texCoord [" << i << "] = " << resultData[i].texCoord.x << " | " << resultData[i].texCoord.y << std::endl << std::endl;
-    }
-
-    vkUnmapMemory(Device::get().getDevice(), stagingBuffer.getBufferMemory());
-    
-    stagingBuffer.cleanup();
-}
-
-
-void BufferManager::printIndexBuffer(size_t sizeToPrint) {
-    VkDeviceSize bufferSize = sizeof(uint32_t) * sizeToPrint;
-    
-    Buffer stagingBuffer;
-    stagingBuffer.createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-    copyBuffer(BufferManager::get().getIndexBuffers().getBuffer(), stagingBuffer.getBuffer(), bufferSize);
-
-    void* data;
-    vkMapMemory(Device::get().getDevice(), stagingBuffer.getBufferMemory(), 0, bufferSize, 0, &data);
-    uint32_t* resultData = static_cast<uint32_t*>(data);
-
-    std::cout << "Index Buffer -> Byte print : " << bufferSize << std::endl;
-
-    for (int i = 0; i < sizeToPrint; ++i) {
-        std::cout << "  index [" << i << "] = " << resultData[i] << std::endl;
-    }
-
-    vkUnmapMemory(Device::get().getDevice(), stagingBuffer.getBufferMemory());
-    
-    stagingBuffer.cleanup();
-}
-
-
-void BufferManager::printIndirectBuffer(size_t sizeToPrint) {
-    VkDeviceSize bufferSize = sizeof(DrawIndirectCommand) * sizeToPrint;
-    
-    Buffer stagingBuffer;
-    stagingBuffer.createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-    copyBuffer(BufferManager::get().getAllocator().getIndirectBuffer().getBuffer(), stagingBuffer.getBuffer(), bufferSize);
-
-    void* data;
-    vkMapMemory(Device::get().getDevice(), stagingBuffer.getBufferMemory(), 0, bufferSize, 0, &data);
-    DrawIndirectCommand* resultData = static_cast<DrawIndirectCommand*>(data);
-
-    std::cout << "Indirect Buffer -> Byte print : " << bufferSize << std::endl;
-
-    for (int i = 0; i < sizeToPrint; ++i) {
-        std::cout << "  DrawIndirectCommand [" << i << "].firstInstance = " << resultData[i].firstInstance << std::endl;
-        std::cout << "  DrawIndirectCommand [" << i << "].indexCount = " << resultData[i].indexCount << std::endl;
-        std::cout << "  DrawIndirectCommand [" << i << "].indexOffset = " << resultData[i].indexOffset << std::endl;
-        std::cout << "  DrawIndirectCommand [" << i << "].vertexOffset = " << resultData[i].vertexOffset << std::endl;
-        std::cout << "  DrawIndirectCommand [" << i << "].instanceCount = " << resultData[i].instanceCount << std::endl << std::endl;
-    }
-
-    vkUnmapMemory(Device::get().getDevice(), stagingBuffer.getBufferMemory());
-    
-    stagingBuffer.cleanup();
 }
 
 void BufferManager::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
@@ -182,19 +76,19 @@ void BufferManager::createImage(uint32_t width, uint32_t height, VkFormat format
     vkBindImageMemory(Device::get().getDevice(), image, imageMemory, 0);
 }
 
-void BufferManager::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
+void BufferManager::copyBuffer(Buffer srcBuffer, Buffer dstBuffer, VkDeviceSize size) {
     copyBuffer(srcBuffer, dstBuffer, size, 0, 0);
 }
 
-void BufferManager::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkDeviceSize srcOffset, VkDeviceSize dstOffset) {
-    if (size <= 0) return;
+void BufferManager::copyBuffer(Buffer srcBuffer, Buffer dstBuffer, VkDeviceSize size, VkDeviceSize srcOffset, VkDeviceSize dstOffset) {
+    if (size <= 0 || size+dstOffset > dstBuffer.getSize() || size+srcOffset > srcBuffer.getSize()) throw std::runtime_error("BufferManager::copyBuffer() -> GPU buffer overflow !");
     VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
     VkBufferCopy copyRegion{};
     copyRegion.size = size;
     copyRegion.srcOffset = srcOffset;
     copyRegion.dstOffset = dstOffset;
-    vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+    vkCmdCopyBuffer(commandBuffer, srcBuffer.getBuffer(), dstBuffer.getBuffer(), 1, &copyRegion);
 
     endSingleTimeCommands(commandBuffer);
 }
@@ -243,4 +137,16 @@ uint32_t BufferManager::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlag
     }
 
     throw std::runtime_error("failed to find suitable memory type!");
+}
+
+void BufferManager::cleanupBuffers() {
+    allocator.cleanup();
+    voxelBuffer.cleanup();
+    updateVoxelBuffer.cleanup();
+}
+
+void BufferManager::cleanupUniformBuffer() {
+    for (auto ubo : uniformBuffers) {
+        ubo.cleanup();
+    }
 }

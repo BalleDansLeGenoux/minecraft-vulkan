@@ -263,8 +263,6 @@ void VulkanApp::recordComputeCommandBuffer() {
     uint32_t bufferSize = blockUpdate.size();
     vkCmdPushConstants(Renderer::get().getCurrentComputeCommandBuffers(), ComputePipeline::get().getComputePipelineLayout(), VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &bufferSize);
 
-    BufferManager::get().updateUpdateVoxelBuffer(blockUpdate);
-
     vkCmdDispatch(Renderer::get().getCurrentComputeCommandBuffers(), blockUpdate.size(), 1, 1);
 
     if (vkEndCommandBuffer(Renderer::get().getCurrentComputeCommandBuffers()) != VK_SUCCESS) {

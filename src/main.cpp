@@ -61,11 +61,13 @@ void run(VulkanApp& app) {
     // ------------------------------------------------------------------ //
 
     auto lastTime = std::chrono::high_resolution_clock::now();
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    double elapsedTime;
     int frameCount = 0;
 
     while (app.isRun()) {
-        auto currentTime = std::chrono::high_resolution_clock::now();    
-        double elapsedTime = std::chrono::duration<double, std::milli>(currentTime - lastTime).count();
+        currentTime = std::chrono::high_resolution_clock::now();    
+        elapsedTime = std::chrono::duration<double, std::milli>(currentTime - lastTime).count();
         frameCount++;
     
         if (elapsedTime >= 1000.0) {

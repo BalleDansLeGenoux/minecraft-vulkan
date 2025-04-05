@@ -25,13 +25,8 @@ public:
     void updateUniformBuffer(glm::mat4 matrix);
     void cleanupUniformBuffer();
 
-    void updateUpdateVoxelBuffer(std::vector<BlockUpdate>& blockUpdate); // tmp
-    void printVertexBuffer(size_t size);
-    void printIndexBuffer(size_t size);
-    void printIndirectBuffer(size_t sizeToPrint);
-
-    static void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-    static void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkDeviceSize srcOffset, VkDeviceSize dstOffset);
+    static void copyBuffer(Buffer srcBuffer, Buffer dstBuffer, VkDeviceSize size);
+    static void copyBuffer(Buffer srcBuffer, Buffer dstBuffer, VkDeviceSize size, VkDeviceSize srcOffset, VkDeviceSize dstOffset);
     static VkCommandBuffer beginSingleTimeCommands();
     static void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 
@@ -39,11 +34,11 @@ public:
     static uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 
-    Buffer& getVertexBuffers()     { return allocator.getVertexBuffer(); }
-    Buffer& getIndexBuffers()      { return allocator.getIndexBuffer(); }
-    Buffer& getVoxelBuffer()       { return voxelBuffer; }
-    Buffer& getUpdateVoxelBuffer() { return updateVoxelBuffer; }
-    AllocatorManager& getAllocator()      { return allocator; }
+    Buffer& getVertexBuffers()               { return allocator.getVertexBuffer(); }
+    Buffer& getIndexBuffers()                { return allocator.getIndexBuffer(); }
+    Buffer& getVoxelBuffer()                 { return voxelBuffer; }
+    Buffer& getUpdateVoxelBuffer()           { return updateVoxelBuffer; }
+    AllocatorManager& getAllocator()         { return allocator; }
     UniformBuffer& getUniformBuffer(int i)   { return uniformBuffers[i]; }
 
 
