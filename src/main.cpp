@@ -10,29 +10,7 @@
 
 #include "graphics/app.h"
 #include "world/chunk_manager.h"
-#include "world/procedural_generator.h"
-
-void test(ProceduralGenerator& p, glm::vec2 v) {
-    p.generateChunk(v);
-}
-
-// test multithread mais faut ajouter des mutex, la ça marche pas
-
-// void procedural() {
-//     std::vector<std::thread*> v;
-//     int size = 32;
-//     ProceduralGenerator p;
-//     for (int x = -(size/2); x < size/2; x++) {
-//         for (int y = -(size/2); y < size/2; y++) {
-//             // p.generateChunk({x, y});
-//             v.push_back(new std::thread(test, std::ref(p), glm::vec2(x, y)));
-//         }
-//     }
-//     for (auto* t : v) {
-//         t->join();
-//     }
-//     ChunkManager::get().update();
-// }
+#include "world/procedural_generator.h" 
 
 void procedural() {
     int size = 32;
@@ -42,6 +20,24 @@ void procedural() {
             p.generateChunk({x, y});
         }
     }
+    ChunkManager::get().update();
+}
+
+void flat() {
+    Chunk* chunk;
+    for (int cx = 0; cx < 4; cx++) {
+        for (int cy = 0; cy < 4; cy++) {
+            chunk = ChunkManager::get().addChunk({cx, 0, cy});
+
+            for (int x = 0; x < CHUNK_SIZE; x++) {
+                for (int z = 0; z < CHUNK_SIZE; z++) {
+                    chunk->addVoxel({x, 0, z}, 1);
+                }
+            }
+        }
+    }
+    chunk->addVoxel({0, 1, 0}, 1);
+
     ChunkManager::get().update();
 }
 
@@ -88,7 +84,7 @@ int main(int argc, char const *argv[])
 {
     std::vector<BlockUpdate> tmp;
 
-    VulkanApp app({0, 150.0f, 0}, 70, tmp);
+    VulkanApp app({0, 10.0f, 0}, 70, tmp);
 
     try {
         run(app);

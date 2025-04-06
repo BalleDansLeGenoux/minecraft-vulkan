@@ -27,7 +27,7 @@ clean:
 
 # Juste pour me rappeler à quel point je perds mon temps 
 lines:
-	find $(SRC_DIR) $(INCLUDE_DIR) -name '*.cpp' -o -name '*.h' | xargs wc -l | cat
+	find $(SRC_DIR) $(INCLUDE_DIR) res/shaders -name '*.cpp' -o -name '*.h' -o -name '*.glsl' | xargs wc -l | cat
 
 shaders:
 	glslc -fshader-stage=comp res/shaders/comp.glsl -o res/shaders/comp.spv

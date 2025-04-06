@@ -29,8 +29,6 @@ void debug(VulkanApp* app) {
     // BufferManager::get().printIndirectBuffer(BufferManager::get().getAllocator().getIndirectCount()+1);
 }
 
-
-
 void VulkanApp::initWindow() {
     glfwInit();
 
@@ -231,7 +229,18 @@ void VulkanApp::recordCommandBuffer(uint32_t imageIndex) {
         vkCmdBindIndexBuffer(Renderer::get().getCurrentCommandBuffers(), BufferManager::get().getIndexBuffers().getBuffer(), 0, VK_INDEX_TYPE_UINT32);
         vkCmdBindDescriptorSets(Renderer::get().getCurrentCommandBuffers(), VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicPipeline::get().getPipelineLayout(), 0, 1, &(Descriptor::get().getDescriptorSets())[Renderer::get().getCurrentFrame()], 0, nullptr);
 
-        // vkCmdDrawIndexed(Renderer::get().getCurrentCommandBuffers(), BufferManager::get().getAllocator().getNumberIndex(), 1, 0, 0, 0); // Va faloir changer ça (recup le nb de face a afficher), le 2eme arg c'est le nb d'index
+        PushConstantData pushData {
+            camera.getPosition(),
+            camera.getProjectionMatrix()*camera.getViewMatrix(),
+            {
+                glm::vec3(1, -1, 1),
+                glm::vec3(0.1),
+                glm::vec3(0.4),
+                glm::vec3(1.0, 0.5, 0.0)
+            }
+        };
+
+        vkCmdPushConstants(Renderer::get().getCurrentCommandBuffers(), GraphicPipeline::get().getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData), &pushData);
 
         vkCmdDrawIndexedIndirect(
             Renderer::get().getCurrentCommandBuffers(),

@@ -5,6 +5,14 @@
 #include <vector>
 #include <fstream>
 
+#include "graphics/light.h"
+
+struct alignas(16) PushConstantData {
+    alignas(16) glm::vec3 viewPos;
+    alignas(16) glm::mat4 modelMatrix;
+    alignas(16) Light light;
+};
+
 class GraphicPipeline {
 public:
     static GraphicPipeline& get() {
