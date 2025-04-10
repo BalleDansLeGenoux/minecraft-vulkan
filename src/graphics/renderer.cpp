@@ -22,7 +22,7 @@ void Renderer::createCommandPool() {
 }
 
 void Renderer::createCommandBuffers() {
-    commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+    commandBuffers.resize(Swapchain::get().getFramesInFlight());
 
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -36,7 +36,7 @@ void Renderer::createCommandBuffers() {
 }
 
 void Renderer::createComputeCommandBuffers() {
-    computeCommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+    computeCommandBuffers.resize(Swapchain::get().getFramesInFlight());
 
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -50,11 +50,11 @@ void Renderer::createComputeCommandBuffers() {
 }
 
 void Renderer::createSyncObjects() {
-    imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-    renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-    computeInFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-    computeFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-    inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+    imageAvailableSemaphores.resize(Swapchain::get().getFramesInFlight());
+    renderFinishedSemaphores.resize(Swapchain::get().getFramesInFlight());
+    computeInFlightFences.resize(Swapchain::get().getFramesInFlight());
+    computeFinishedSemaphores.resize(Swapchain::get().getFramesInFlight());
+    inFlightFences.resize(Swapchain::get().getFramesInFlight());
 
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -63,7 +63,7 @@ void Renderer::createSyncObjects() {
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    for (size_t i = 0; i < Swapchain::get().getFramesInFlight(); i++) {
         if (vkCreateSemaphore(Device::get().getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
             vkCreateSemaphore(Device::get().getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
             vkCreateFence(Device::get().getDevice(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
@@ -102,7 +102,7 @@ void Renderer::createFramebuffers() {
 }
 
 void Renderer::cleanup() {
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    for (size_t i = 0; i < Swapchain::get().getFramesInFlight(); i++) {
         vkDestroySemaphore(Device::get().getDevice(), renderFinishedSemaphores[i], nullptr);
         vkDestroySemaphore(Device::get().getDevice(), imageAvailableSemaphores[i], nullptr);
         vkDestroySemaphore(Device::get().getDevice(), computeFinishedSemaphores[i], nullptr);
@@ -114,5 +114,5 @@ void Renderer::cleanup() {
 }
 
 void Renderer::incrementeCurrentFrame() {
-    currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+    currentFrame = (currentFrame + 1) % Swapchain::get().getFramesInFlight();
 }

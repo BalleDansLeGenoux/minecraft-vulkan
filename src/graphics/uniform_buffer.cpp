@@ -17,9 +17,16 @@ void UniformBuffer::createUniformBuffer() {
     }
 }
 
-void UniformBuffer::updateUniformBuffer(glm::mat4 matrix) {
-    UniformBufferObject ubo{};
-    ubo.matrix = matrix;
+void UniformBuffer::updateUniformBuffer(glm::vec3 camPos, glm::mat4 matrix, glm::vec3 sunDir, glm::vec3 moonDir) {
+    sun_light.direction = sunDir;
+    moon_light.direction = moonDir;
+
+    UniformBufferObject ubo {
+        camPos,
+        matrix,
+        sun_light,
+        moon_light
+    };
 
     memcpy(uniformBufferMapped, &ubo, sizeof(ubo));
 }

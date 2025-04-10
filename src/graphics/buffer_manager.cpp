@@ -8,6 +8,7 @@
 #include "graphics/vertex.h"
 #include "graphics/renderer.h"
 #include "graphics/device.h"
+#include "graphics/swapchain.h"
 
 void BufferManager::createBuffers() {
     allocator.init();
@@ -30,15 +31,15 @@ void BufferManager::createBuffers() {
 }
 
 void BufferManager::createUniformBuffers() {
-    uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+    uniformBuffers.resize(Swapchain::get().getFramesInFlight());
 
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    for (size_t i = 0; i < Swapchain::get().getFramesInFlight(); i++) {
         uniformBuffers[i].createUniformBuffer();
     }
 }
 
-void BufferManager::updateUniformBuffer(glm::mat4 matrix) {
-    uniformBuffers.at(Renderer::get().getCurrentFrame()).updateUniformBuffer(matrix);
+void BufferManager::updateUniformBuffer(glm::vec3 camPos, glm::mat4 matrix, glm::vec3 sunPos, glm::vec3 moonPos) {
+    uniformBuffers.at(Renderer::get().getCurrentFrame()).updateUniformBuffer(camPos, matrix, sunPos, moonPos);
 }
 
 void BufferManager::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {

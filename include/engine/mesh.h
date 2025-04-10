@@ -9,7 +9,7 @@
 #include "world/voxel.h"
 #include "graphics/vertex.h"
 #include "engine/face_position.h"
-#include "engine/texture_coord.h"
+#include "engine/texture_data.h"
 
 class Mesh {
 public:
@@ -26,7 +26,7 @@ private:
     std::vector<Vertex> vertex;
     std::vector<uint32_t> index;
 
-    void addQuad(glm::vec3 pos, FacePosition face_pos, glm::vec3 normal, FaceTextureCoord uv);
+    void addQuad(glm::vec3 pos, FacePosition face_pos, glm::vec3 normal, FaceTextureData uv, float shininess);
     void addIndex();
 };
 

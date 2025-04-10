@@ -10,14 +10,14 @@
 #include "engine/mesh.h"
 
 void AllocatorManager::init() {
-    _staging.createBuffer(NB_FACE_CHUNK * 4*sizeof(Vertex)*10,
+    _staging.createBuffer(NB_FACE_CHUNK * 4*sizeof(Vertex),
         VK_BUFFER_USAGE_TRANSFER_DST_BIT |
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
         VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
     );
 
-    uint32_t nbBlock = NB_FACE_CHUNK * std::pow(RENDER_DISTANCE, 3);
+    uint32_t nbBlock = NB_FACE_CHUNK * std::pow(RENDER_DISTANCE, 2);
 
     _vertexAllocator = Allocator(
         VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,

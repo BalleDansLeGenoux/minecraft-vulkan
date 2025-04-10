@@ -22,13 +22,6 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 
-void debug(VulkanApp* app) {
-    // BufferManager::get().printVertexBuffer(BufferManager::get().getAllocator().getVertexCount()+1);
-    // BufferManager::get().printVertexBuffer(50);
-    // BufferManager::get().printIndexBuffer(BufferManager::get().getAllocator().getIndexCount()+1);
-    // BufferManager::get().printIndirectBuffer(BufferManager::get().getAllocator().getIndirectCount()+1);
-}
-
 void VulkanApp::initWindow() {
     glfwInit();
 
@@ -93,8 +86,6 @@ void VulkanApp::init() {
 }
 
 void VulkanApp::cleanup() {
-    debug(this);
-
     vkDeviceWaitIdle(Device::get().getDevice());
 
     Swapchain::get().cleanup();
@@ -133,7 +124,12 @@ void VulkanApp::drawFrame() {
         throw std::runtime_error("failed to acquire swap chain image!");
     }
 
-    BufferManager::get().updateUniformBuffer(camera.getProjectionMatrix()*camera.getViewMatrix());
+    BufferManager::get().updateUniformBuffer(
+        camera.getPosition(),
+        camera.getProjectionMatrix()*camera.getViewMatrix(),
+        {1, -1, 1},
+        {1, -1, 1}
+    );
 
     vkResetFences(Device::get().getDevice(), 1, &Renderer::get().getCurrentInFlightFences());
 
@@ -179,6 +175,8 @@ void VulkanApp::drawFrame() {
         throw std::runtime_error("failed to present swap chain image!");
     }
 
+    // std::cout << "[DEBUG]" << imageIndex << " | " << Renderer::get().getCurrentFrame() << std::endl;
+
     Renderer::get().incrementeCurrentFrame();
 }
 
@@ -199,6 +197,7 @@ void VulkanApp::recordCommandBuffer(uint32_t imageIndex) {
 
     std::array<VkClearValue, 2> clearValues{};
     clearValues[0].color = {{0.0f, 0.0f, 1.0f, 1.0f}};
+    // clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
     clearValues[1].depthStencil = {1.0f, 0};
 
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
@@ -229,25 +228,12 @@ void VulkanApp::recordCommandBuffer(uint32_t imageIndex) {
         vkCmdBindIndexBuffer(Renderer::get().getCurrentCommandBuffers(), BufferManager::get().getIndexBuffers().getBuffer(), 0, VK_INDEX_TYPE_UINT32);
         vkCmdBindDescriptorSets(Renderer::get().getCurrentCommandBuffers(), VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicPipeline::get().getPipelineLayout(), 0, 1, &(Descriptor::get().getDescriptorSets())[Renderer::get().getCurrentFrame()], 0, nullptr);
 
-        PushConstantData pushData {
-            camera.getPosition(),
-            camera.getProjectionMatrix()*camera.getViewMatrix(),
-            {
-                glm::vec3(1, -1, 1),
-                glm::vec3(0.1),
-                glm::vec3(0.4),
-                glm::vec3(1.0, 0.5, 0.0)
-            }
-        };
-
-        vkCmdPushConstants(Renderer::get().getCurrentCommandBuffers(), GraphicPipeline::get().getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData), &pushData);
-
         vkCmdDrawIndexedIndirect(
             Renderer::get().getCurrentCommandBuffers(),
-            BufferManager::get().getAllocator().getIndirectBuffer().getBuffer(),  // Buffer contenant les commandes
-            0,                                                                    // Offset du premier DrawIndirectCommand
-            BufferManager::get().getAllocator().getIndirectCount(),               // Nombre de draw calls (10 dans ton cas)
-            sizeof(DrawIndirectCommand)                                           // Taille d’une commande
+            BufferManager::get().getAllocator().getIndirectBuffer().getBuffer(),
+            0,
+            BufferManager::get().getAllocator().getIndirectCount(),
+            sizeof(DrawIndirectCommand)
         );
 
     vkCmdEndRenderPass(Renderer::get().getCurrentCommandBuffers());

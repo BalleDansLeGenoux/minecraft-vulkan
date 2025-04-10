@@ -24,7 +24,13 @@ std::string ChunkManager::getStringFromIvec(glm::ivec3 v) {
 
 void ChunkManager::update() {
     for (auto& [key, chunk] : chunks) {
-        chunk->updateMesh();
+        chunk->update();
+    }
+}
+
+void ChunkManager::upload() {
+    for (auto& [key, chunk] : chunks) {
+        chunk->upload();
     }
 }
 

@@ -12,15 +12,30 @@
 #include "world/chunk_manager.h"
 #include "world/procedural_generator.h" 
 
+void update() {
+    ChunkManager::get().update();
+}
+
+void upload() {
+    ChunkManager::get().upload();
+}
+
 void procedural() {
-    int size = 32;
+    int size = 28;
     ProceduralGenerator p;
     for (int x = -(size/2); x < size/2; x++) {
         for (int y = -(size/2); y < size/2; y++) {
             p.generateChunk({x, y});
         }
     }
-    ChunkManager::get().update();
+
+    Chunk* chunk = ChunkManager::get().addChunk({0, 6, 0});
+
+    for (int x = 0; x < CHUNK_SIZE; x++) {
+        for (int z = 0; z < CHUNK_SIZE; z++) {
+            chunk->addVoxel({x, 0, z}, 6);
+        }
+    }
 }
 
 void flat() {
@@ -41,18 +56,30 @@ void flat() {
     ChunkManager::get().update();
 }
 
+double timeOf(void (*func)(), std::string msg) {
+    auto start = std::chrono::high_resolution_clock::now();
+    func();
+    auto end = std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<double, std::milli> elapsed = end - start;
+    
+    std::cout << msg << elapsed.count() << " ms" << std::endl;
+
+    return elapsed.count();
+}
+
 void run(VulkanApp& app) {
     app.init();
 
     // ------------------------ Temps Allocation ------------------------ //
 
-    auto start = std::chrono::high_resolution_clock::now();
-    procedural();
-    auto end = std::chrono::high_resolution_clock::now();
+    double total = 0;
 
-    std::chrono::duration<double, std::milli> elapsed = end - start;
-    
-    std::cout << "Temps d'exécution : " << elapsed.count() << " ms" << std::endl;
+    total += timeOf(procedural, "Temps de génération du monde : ");
+    total += timeOf(update, "Temps de crétion des mesh : ");
+    total += timeOf(upload, "Temps de d'allocation GPU : ");
+
+    std::cout << "Temps total : " << total << std::endl;
 
     // ------------------------------------------------------------------ //
 

@@ -4,6 +4,7 @@
 #include <limits>
 #include <iostream>
 
+#include "core/config.h"
 #include "graphics/device.h"
 #include "graphics/instance.h"
 #include "graphics/renderer.h"
@@ -15,23 +16,21 @@ void Swapchain::createSwapChain(GLFWwindow* window) {
     VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
     VkExtent2D extent = chooseSwapExtent(window, swapChainSupport.capabilities);
 
-    uint32_t imageCount = swapChainSupport.capabilities.minImageCount+1;
-    if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
-        imageCount = swapChainSupport.capabilities.maxImageCount;
+    frames_in_flight = swapChainSupport.capabilities.minImageCount+1;
+    if (swapChainSupport.capabilities.maxImageCount > 0 && frames_in_flight > swapChainSupport.capabilities.maxImageCount) {
+        frames_in_flight = swapChainSupport.capabilities.maxImageCount;
     }
 
-    #ifdef DEBUG_SWAPCHAIN
     std::cout << "Swapchain Capabilities : " << std::endl;
     std::cout << "  Max : " << swapChainSupport.capabilities.minImageCount << std::endl;
     std::cout << "  Min : " << swapChainSupport.capabilities.maxImageCount << std::endl;
-    std::cout << "  Current : " << imageCount << std::endl;
-    #endif
+    std::cout << "  Current : " << frames_in_flight << std::endl;
 
     VkSwapchainCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     createInfo.surface = Instance::get().getSurface();
 
-    createInfo.minImageCount = imageCount;
+    createInfo.minImageCount = frames_in_flight;
     createInfo.imageFormat = surfaceFormat.format;
     createInfo.imageColorSpace = surfaceFormat.colorSpace;
     createInfo.imageExtent = extent;
@@ -58,9 +57,9 @@ void Swapchain::createSwapChain(GLFWwindow* window) {
         throw std::runtime_error("failed to create swap chain!");
     }
 
-    vkGetSwapchainImagesKHR(Device::get().getDevice(), swapChain, &imageCount, nullptr);
-    swapChainImages.resize(imageCount);
-    vkGetSwapchainImagesKHR(Device::get().getDevice(), swapChain, &imageCount, swapChainImages.data());
+    vkGetSwapchainImagesKHR(Device::get().getDevice(), swapChain, &frames_in_flight, nullptr);
+    swapChainImages.resize(frames_in_flight);
+    vkGetSwapchainImagesKHR(Device::get().getDevice(), swapChain, &frames_in_flight, swapChainImages.data());
 
     swapChainImageFormat = surfaceFormat.format;
     swapChainExtent = extent;

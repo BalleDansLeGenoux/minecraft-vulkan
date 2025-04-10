@@ -19,6 +19,7 @@ public:
     void removeChunk(glm::ivec3 pos);
 
     void update();
+    void upload();
 
     static std::string getStringFromIvec(glm::ivec3 v);
 

@@ -33,6 +33,7 @@ public:
     const std::vector<VkFramebuffer>& getSwapChainFramebuffers() { return swapChainFramebuffers; }
     const VkFramebuffer&              getFramebuffers(uint32_t imageIndex) { return swapChainFramebuffers[imageIndex]; }
     const float                       getAspectRatio() const { return swapChainExtent.width/swapChainExtent.height; }
+    const uint32_t                    getFramesInFlight() const { return frames_in_flight; }
 
     void addSwapChainFramebuffers(VkFramebuffer pframeBuffer);
 
@@ -43,6 +44,8 @@ private:
     VkExtent2D swapChainExtent;
     std::vector<VkImageView> swapChainImageViews;
     std::vector<VkFramebuffer> swapChainFramebuffers;
+
+    uint32_t frames_in_flight;
 
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);

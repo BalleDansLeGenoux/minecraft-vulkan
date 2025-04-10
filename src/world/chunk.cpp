@@ -19,8 +19,11 @@ void Chunk::addVoxel(glm::ivec3 pos, Voxel voxel) {
     voxels[pos.x][pos.y][pos.z] = voxel;
 }
 
-void Chunk::updateMesh() {
+void Chunk::update() {
     mesh.cullingMeshing(pos, voxels);
+}
+
+void Chunk::upload() {
     if (mesh.isEmpty()) return;
     allocId = BufferManager::get().getAllocator().allocMesh(mesh, allocId);
 }

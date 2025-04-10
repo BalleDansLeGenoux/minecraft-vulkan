@@ -17,7 +17,8 @@ public:
 
     void init();
     void addVoxel(glm::ivec3 pos, Voxel voxel);
-    void updateMesh();
+    void update();
+    void upload();
     void cleanup();
 
     glm::ivec3 getPos()                      { return pos; }

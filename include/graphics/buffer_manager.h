@@ -22,7 +22,7 @@ public:
     void cleanupBuffers();
 
     void createUniformBuffers();
-    void updateUniformBuffer(glm::mat4 matrix);
+    void updateUniformBuffer(glm::vec3 camPos, glm::mat4 matrix, glm::vec3 sunPos, glm::vec3 moonPos);
     void cleanupUniformBuffer();
 
     static void copyBuffer(Buffer srcBuffer, Buffer dstBuffer, VkDeviceSize size);

@@ -5,7 +5,7 @@
 #include <math.h>
 
 Camera::Camera(glm::vec3 position, float fov, float aspectRatio)
-    : position(position), yaw(-90.0f), pitch(0.0f), movementSpeed(5.0f), 
+    : position(position), yaw(-90.0f), pitch(0.0f), movementSpeed(50.0f), 
       mouseSensitivity(0.1f), fov(fov) {
 
     worldUp = glm::vec3(0.0f, -1.0f, 0.0f);
@@ -41,7 +41,7 @@ int Camera::processKeyboard(int key, int action) {
     if (key == GLFW_KEY_D && action == GLFW_PRESS) axeX++;
     if (key == GLFW_KEY_C && action == GLFW_PRESS) axeY++;
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) axeY--;
-    if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_PRESS) movementSpeed *= 3;
+    if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_PRESS) movementSpeed *= 5;
 
     if (key == GLFW_KEY_W && action == GLFW_RELEASE) axeZ--;
     if (key == GLFW_KEY_S && action == GLFW_RELEASE) axeZ++;
@@ -49,7 +49,7 @@ int Camera::processKeyboard(int key, int action) {
     if (key == GLFW_KEY_D && action == GLFW_RELEASE) axeX--;
     if (key == GLFW_KEY_C && action == GLFW_RELEASE) axeY--;
     if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE) axeY++;
-    if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_RELEASE) movementSpeed /= 3;
+    if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_RELEASE) movementSpeed /= 5;
 
     if (action != GLFW_PRESS)   return 0;
     if (key == GLFW_KEY_ESCAPE) return 1;

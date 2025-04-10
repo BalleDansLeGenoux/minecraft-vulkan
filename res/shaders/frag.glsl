@@ -8,13 +8,14 @@ struct Light {
     vec3 specular;
 };
 
-layout(binding = 1) uniform sampler2D texSampler;
+layout(binding = 0) uniform UniformBufferObject {
+    vec3 cameraPos;
+    mat4 matrix;
+    Light sunLight;
+    Light moonLight;
+ } ubo;
 
-layout(push_constant) uniform PushConstantData {
-    vec3 viewPos;
-    mat4 modelMatrix;
-    Light light;
-};
+layout(binding = 1) uniform sampler2D texSampler;
 
 layout(location = 0) in vec3 fragPos;
 layout(location = 1) in vec3 fragNormal;
@@ -27,21 +28,23 @@ vec3 texColor = texture(texSampler, fragTexCoord).rgb;
 
 void main() {
     // ambient
-    vec3 ambient = light.ambient * texColor;
+    vec3 ambient = ubo.sunLight.ambient * texColor;
   	
     // diffuse 
     vec3 norm = normalize(fragNormal);
-    vec3 lightDir = normalize(-light.direction);
+    vec3 lightDir = normalize(-ubo.sunLight.direction);
     float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = light.diffuse * diff * texColor;
+    vec3 diffuse = ubo.sunLight.diffuse * diff * texColor;
     
     // specular
-    vec3 viewDir = normalize(viewPos - fragPos);
+    vec3 specular = vec3(0.0);
+    if (fragShininess > 0) {
+    vec3 viewDir = normalize(ubo.cameraPos - fragPos);
     vec3 reflectDir = reflect(-lightDir, norm);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), fragShininess);
-    vec3 specular = light.specular * spec * texColor;
+    specular = ubo.sunLight.specular * spec * texColor;
+    }
         
     vec3 result = ambient + diffuse + specular;
-    outColor = vec4(result, 1.0);
-    // outColor = vec4(norm * 0.5 + 0.5, 1.0);
+    outColor = vec4(result, texture(texSampler, fragTexCoord).a);
 }
