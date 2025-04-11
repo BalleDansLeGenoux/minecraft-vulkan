@@ -11,22 +11,21 @@
 #include "graphics/compute_pipeline.h"
 #include "graphics/buffer_manager.h"
 #include "graphics/uniform_buffer.h"
-#include "graphics/swapchain.h"
 
 void Descriptor::createDescriptorPool() {
     std::array<VkDescriptorPoolSize, 3> poolSizes{};
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    poolSizes[0].descriptorCount = static_cast<uint32_t>(Swapchain::get().getFramesInFlight())*4;
+    poolSizes[0].descriptorCount = static_cast<uint32_t>(FRAME_IN_FLIGHT)*4;
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSizes[1].descriptorCount = static_cast<uint32_t>(Swapchain::get().getFramesInFlight());
+    poolSizes[1].descriptorCount = static_cast<uint32_t>(FRAME_IN_FLIGHT);
     poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[2].descriptorCount = static_cast<uint32_t>(Swapchain::get().getFramesInFlight());
+    poolSizes[2].descriptorCount = static_cast<uint32_t>(FRAME_IN_FLIGHT);
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
     poolInfo.pPoolSizes = poolSizes.data();
-    poolInfo.maxSets = static_cast<uint32_t>(Swapchain::get().getFramesInFlight())*4;
+    poolInfo.maxSets = static_cast<uint32_t>(FRAME_IN_FLIGHT)*4;
 
     if (vkCreateDescriptorPool(Device::get().getDevice(), &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
         throw std::runtime_error("failed to create descriptor pool!");
@@ -34,27 +33,27 @@ void Descriptor::createDescriptorPool() {
 }
 
 void Descriptor::createDescriptorSets() {
-    std::vector<VkDescriptorSetLayout> layouts(Swapchain::get().getFramesInFlight(), GraphicPipeline::get().getDescriptorSetLayout());
-    std::vector<VkDescriptorSetLayout> computeLayouts(Swapchain::get().getFramesInFlight(), ComputePipeline::get().getDescriptorSetLayout());
+    std::vector<VkDescriptorSetLayout> layouts(FRAME_IN_FLIGHT, GraphicPipeline::get().getDescriptorSetLayout());
+    std::vector<VkDescriptorSetLayout> computeLayouts(FRAME_IN_FLIGHT, ComputePipeline::get().getDescriptorSetLayout());
 
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = descriptorPool;
-    allocInfo.descriptorSetCount = static_cast<uint32_t>(Swapchain::get().getFramesInFlight());
+    allocInfo.descriptorSetCount = static_cast<uint32_t>(FRAME_IN_FLIGHT);
 
     allocInfo.pSetLayouts = layouts.data();
-    descriptorSets.resize(Swapchain::get().getFramesInFlight());
+    descriptorSets.resize(FRAME_IN_FLIGHT);
     if (vkAllocateDescriptorSets(Device::get().getDevice(), &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate descriptor sets!");
     }
 
     allocInfo.pSetLayouts = computeLayouts.data();
-    computeDescriptorSets.resize(Swapchain::get().getFramesInFlight());
+    computeDescriptorSets.resize(FRAME_IN_FLIGHT);
     if (vkAllocateDescriptorSets(Device::get().getDevice(), &allocInfo, computeDescriptorSets.data()) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate descriptor sets for compute!");
     }
 
-    for (size_t i = 0; i < Swapchain::get().getFramesInFlight(); i++) {
+    for (size_t i = 0; i < FRAME_IN_FLIGHT; i++) {
         VkDescriptorBufferInfo bufferInfo{};
         bufferInfo.buffer = BufferManager::get().getUniformBuffer(i).getBuffer();
         bufferInfo.offset = 0;
@@ -90,7 +89,7 @@ void Descriptor::createDescriptorSets() {
         }
     }
 
-    for (size_t i = 0; i < Swapchain::get().getFramesInFlight(); i++) {
+    for (size_t i = 0; i < FRAME_IN_FLIGHT; i++) {
         VkDescriptorBufferInfo voxelBufferInfo{};
         voxelBufferInfo.buffer = BufferManager::get().getVoxelBuffer().getBuffer();
         voxelBufferInfo.offset = 0;

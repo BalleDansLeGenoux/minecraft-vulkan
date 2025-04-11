@@ -8,7 +8,6 @@
 #include "graphics/vertex.h"
 #include "graphics/renderer.h"
 #include "graphics/device.h"
-#include "graphics/swapchain.h"
 
 void BufferManager::createBuffers() {
     allocator.init();
@@ -31,9 +30,9 @@ void BufferManager::createBuffers() {
 }
 
 void BufferManager::createUniformBuffers() {
-    uniformBuffers.resize(Swapchain::get().getFramesInFlight());
+    uniformBuffers.resize(FRAME_IN_FLIGHT);
 
-    for (size_t i = 0; i < Swapchain::get().getFramesInFlight(); i++) {
+    for (size_t i = 0; i < FRAME_IN_FLIGHT; i++) {
         uniformBuffers[i].createUniformBuffer();
     }
 }

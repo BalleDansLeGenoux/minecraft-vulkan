@@ -6,7 +6,6 @@
 #include "core/config.h"
 #include "graphics/device.h"
 #include "graphics/graphic_pipeline.h"
-#include "graphics/swapchain.h"
 
 void Renderer::createCommandPool() {
     QueueFamilyIndices queueFamilyIndices = Device::get().findQueueFamilies(Device::get().getPhysicalDevice());
@@ -22,7 +21,7 @@ void Renderer::createCommandPool() {
 }
 
 void Renderer::createCommandBuffers() {
-    commandBuffers.resize(Swapchain::get().getFramesInFlight());
+    commandBuffers.resize(FRAME_IN_FLIGHT);
 
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -33,10 +32,15 @@ void Renderer::createCommandBuffers() {
     if (vkAllocateCommandBuffers(Device::get().getDevice(), &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate command buffers!");
     }
+
+    commandBufferState.resize(FRAME_IN_FLIGHT);
+    for (int i = 0; i < FRAME_IN_FLIGHT; i++) {
+        commandBufferState.at(i) = false;
+    }
 }
 
 void Renderer::createComputeCommandBuffers() {
-    computeCommandBuffers.resize(Swapchain::get().getFramesInFlight());
+    computeCommandBuffers.resize(FRAME_IN_FLIGHT);
 
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -50,11 +54,11 @@ void Renderer::createComputeCommandBuffers() {
 }
 
 void Renderer::createSyncObjects() {
-    imageAvailableSemaphores.resize(Swapchain::get().getFramesInFlight());
-    renderFinishedSemaphores.resize(Swapchain::get().getFramesInFlight());
-    computeInFlightFences.resize(Swapchain::get().getFramesInFlight());
-    computeFinishedSemaphores.resize(Swapchain::get().getFramesInFlight());
-    inFlightFences.resize(Swapchain::get().getFramesInFlight());
+    imageAvailableSemaphores.resize(FRAME_IN_FLIGHT);
+    renderFinishedSemaphores.resize(FRAME_IN_FLIGHT);
+    computeInFlightFences.resize(FRAME_IN_FLIGHT);
+    computeFinishedSemaphores.resize(FRAME_IN_FLIGHT);
+    inFlightFences.resize(FRAME_IN_FLIGHT);
 
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -63,7 +67,7 @@ void Renderer::createSyncObjects() {
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    for (size_t i = 0; i < Swapchain::get().getFramesInFlight(); i++) {
+    for (size_t i = 0; i < FRAME_IN_FLIGHT; i++) {
         if (vkCreateSemaphore(Device::get().getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
             vkCreateSemaphore(Device::get().getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
             vkCreateFence(Device::get().getDevice(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
@@ -101,8 +105,15 @@ void Renderer::createFramebuffers() {
     }
 }
 
+void Renderer::resetCommandBuffers() {
+    for (int i = 0; i < FRAME_IN_FLIGHT; i++) {
+        vkResetCommandBuffer(commandBuffers[i], /*VkCommandBufferResetFlagBits*/ 0);
+        commandBufferState[i] = false;
+    }
+}
+
 void Renderer::cleanup() {
-    for (size_t i = 0; i < Swapchain::get().getFramesInFlight(); i++) {
+    for (size_t i = 0; i < FRAME_IN_FLIGHT; i++) {
         vkDestroySemaphore(Device::get().getDevice(), renderFinishedSemaphores[i], nullptr);
         vkDestroySemaphore(Device::get().getDevice(), imageAvailableSemaphores[i], nullptr);
         vkDestroySemaphore(Device::get().getDevice(), computeFinishedSemaphores[i], nullptr);
@@ -114,5 +125,5 @@ void Renderer::cleanup() {
 }
 
 void Renderer::incrementeCurrentFrame() {
-    currentFrame = (currentFrame + 1) % Swapchain::get().getFramesInFlight();
+    currentFrame = (currentFrame + 1) % FRAME_IN_FLIGHT;
 }

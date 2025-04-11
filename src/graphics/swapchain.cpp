@@ -21,10 +21,10 @@ void Swapchain::createSwapChain(GLFWwindow* window) {
         frames_in_flight = swapChainSupport.capabilities.maxImageCount;
     }
 
-    std::cout << "Swapchain Capabilities : " << std::endl;
-    std::cout << "  Max : " << swapChainSupport.capabilities.minImageCount << std::endl;
-    std::cout << "  Min : " << swapChainSupport.capabilities.maxImageCount << std::endl;
-    std::cout << "  Current : " << frames_in_flight << std::endl;
+    // std::cout << "Swapchain Capabilities : " << std::endl;
+    // std::cout << "  Max : " << swapChainSupport.capabilities.minImageCount << std::endl;
+    // std::cout << "  Min : " << swapChainSupport.capabilities.maxImageCount << std::endl;
+    // std::cout << "  Current : " << frames_in_flight << std::endl;
 
     VkSwapchainCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;

@@ -111,13 +111,27 @@ void VulkanApp::drawFrame() {
 
     // if (!generated) computeShader(waitSemaphores, waitStages);
 
-    vkWaitForFences(Device::get().getDevice(), 1, &Renderer::get().getCurrentInFlightFences(), VK_TRUE, UINT64_MAX);
+    vkWaitForFences(
+        Device::get().getDevice(),
+        1,
+        &Renderer::get().getCurrentInFlightFences(),
+        VK_TRUE,
+        UINT64_MAX
+    );
 
     uint32_t imageIndex;
-    VkResult result = vkAcquireNextImageKHR(Device::get().getDevice(), Swapchain::get().getSwapChain(), UINT64_MAX, Renderer::get().getCurrentImageAvailableSemaphores(), VK_NULL_HANDLE, &imageIndex);
+    VkResult result = vkAcquireNextImageKHR(
+        Device::get().getDevice(),
+        Swapchain::get().getSwapChain(),
+        UINT64_MAX,
+        Renderer::get().getCurrentImageAvailableSemaphores(),
+        VK_NULL_HANDLE,
+        &imageIndex
+    );
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
         Swapchain::get().recreateSwapChain(window);
+        Renderer::get().resetCommandBuffers();
         camera.updateProjection(Swapchain::get().getAspectRatio());
         return;
     } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
@@ -133,8 +147,11 @@ void VulkanApp::drawFrame() {
 
     vkResetFences(Device::get().getDevice(), 1, &Renderer::get().getCurrentInFlightFences());
 
-    vkResetCommandBuffer(Renderer::get().getCurrentCommandBuffers(), /*VkCommandBufferResetFlagBits*/ 0);
-    recordCommandBuffer(imageIndex);
+
+    if (!Renderer::get().getCurrentCommandBuffersState()) {
+        recordCommandBuffer(imageIndex);
+        Renderer::get().setCurrentCommandBuffersState(true);
+    }
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -170,6 +187,7 @@ void VulkanApp::drawFrame() {
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
         framebufferResized = false;
         Swapchain::get().recreateSwapChain(window);
+        Renderer::get().resetCommandBuffers();
         camera.updateProjection(Swapchain::get().getAspectRatio());
     } else if (result != VK_SUCCESS) {
         throw std::runtime_error("failed to present swap chain image!");
@@ -265,11 +283,6 @@ void VulkanApp::recordComputeCommandBuffer() {
     }
 }
 
-void VulkanApp::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-    auto app = reinterpret_cast<VulkanApp*>(glfwGetWindowUserPointer(window));
-    app->framebufferResized = true;
-}
-
 void VulkanApp::computeShader(std::vector<VkSemaphore>& waitSemaphores, std::vector<VkPipelineStageFlags>& waitStages) {
     waitSemaphores.push_back(Renderer::get().getCurrentComputeFinishedSemaphores());
     waitStages.push_back(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
@@ -327,6 +340,11 @@ void VulkanApp::mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 
         glfwSetCursorPos(window, width/2, height/2);
     }
+}
+
+void VulkanApp::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
+    auto app = reinterpret_cast<VulkanApp*>(glfwGetWindowUserPointer(window));
+    app->framebufferResized = true;
 }
 
 void VulkanApp::updateDeltaTime() {

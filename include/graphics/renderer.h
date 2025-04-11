@@ -17,17 +17,25 @@ public:
     void createComputeCommandBuffers();
     void createSyncObjects();
     void createFramebuffers();
+    void resetCommandBuffers();
     void cleanup();
 
     const VkCommandPool& getCommandPool() { return commandPool; }
+
     const VkCommandBuffer& getCurrentCommandBuffers() { return commandBuffers[currentFrame]; }
     const VkCommandBuffer& getCommandBuffer(int index) { return commandBuffers[index]; }
+
+    const bool getCurrentCommandBuffersState() const { return commandBufferState[currentFrame]; }
+    const void setCurrentCommandBuffersState(bool p_state) { commandBufferState[currentFrame] = p_state; }
+
     const VkCommandBuffer& getCurrentComputeCommandBuffers() { return computeCommandBuffers[currentFrame]; }
     const std::vector<VkFence>& getInFlightFences() { return inFlightFences; }
     const std::vector<VkFence>& getComputeInFlightFences() { return computeInFlightFences; }
+
     const uint32_t& getCurrentFrame() { return currentFrame; }
     const VkFence& getCurrentInFlightFences() { return inFlightFences[currentFrame]; }
     const VkFence& getCurrentComputeInFlightFences() { return computeInFlightFences[currentFrame]; }
+
     const VkSemaphore& getCurrentImageAvailableSemaphores() { return imageAvailableSemaphores[currentFrame]; }
     const VkSemaphore& getCurrentRenderFinishedSemaphores() { return renderFinishedSemaphores[currentFrame]; }
     const VkSemaphore& getCurrentComputeFinishedSemaphores() { return computeFinishedSemaphores[currentFrame]; }
@@ -38,6 +46,7 @@ private:
     VkCommandPool commandPool;
     
     std::vector<VkCommandBuffer> commandBuffers;
+    std::vector<bool> commandBufferState;
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;
     std::vector<VkFence> inFlightFences;

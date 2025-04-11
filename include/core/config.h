@@ -4,6 +4,8 @@
 #include <vector>
 #include <cmath>
 
+#include "graphics/swapchain.h"
+
 // #define NDEBUG
 
 #ifdef NDEBUG
@@ -18,5 +20,7 @@ const int CHUNK_SIZE = 16;
 const int NB_FACE_CHUNK = std::pow(CHUNK_SIZE/2, 3) * 6;
 
 const int MARGIN_BLOCKS = 1; // coef multiplicateur
+
+#define FRAME_IN_FLIGHT Swapchain::get().getFramesInFlight()
 
 #endif // VULKAN_CONFIG_H
