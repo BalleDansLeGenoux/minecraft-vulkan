@@ -37,6 +37,16 @@ void Renderer::createCommandBuffers() {
     for (int i = 0; i < FRAME_IN_FLIGHT; i++) {
         commandBufferState.at(i) = false;
     }
+
+    VkCommandBufferAllocateInfo copyAllocInfo{};
+    copyAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    copyAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    copyAllocInfo.commandPool = commandPool;
+    copyAllocInfo.commandBufferCount = 1;
+
+    if (vkAllocateCommandBuffers(Device::get().getDevice(), &copyAllocInfo, &copyCommandBuffer) != VK_SUCCESS) {
+        throw std::runtime_error("failed to allocate command buffers!");
+    }
 }
 
 void Renderer::createComputeCommandBuffers() {
@@ -107,9 +117,13 @@ void Renderer::createFramebuffers() {
 
 void Renderer::resetCommandBuffers() {
     for (int i = 0; i < FRAME_IN_FLIGHT; i++) {
-        vkResetCommandBuffer(commandBuffers[i], /*VkCommandBufferResetFlagBits*/ 0);
+        vkResetCommandBuffer(commandBuffers[i], 0);
         commandBufferState[i] = false;
     }
+}
+
+void Renderer::resetCopyCommandBuffer() {
+    vkResetCommandBuffer(copyCommandBuffer, 0);
 }
 
 void Renderer::cleanup() {

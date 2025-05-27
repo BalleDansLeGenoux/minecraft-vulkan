@@ -19,7 +19,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(wildcard $(INCLUDE_DIR)/*.h)
 	@mkdir -p $(dir $@)
 	$(CXX) $(CFLAGS) -I$(INCLUDE_DIR) -c $< -o $@ $(LDFLAGS)
 
-exec: all
+run: all
 	./$(BUILD_DIR)/$(TARGET)
 
 clean:
@@ -41,4 +41,4 @@ test:
 	g++ -o bin/test src/main.cpp
 	./bin/test
 
-.PHONY: all exec clean lines exec shaders debug test
+.PHONY: all run clean lines shaders debug test

@@ -18,6 +18,7 @@ public:
     void createSyncObjects();
     void createFramebuffers();
     void resetCommandBuffers();
+    void resetCopyCommandBuffer();
     void cleanup();
 
     const VkCommandPool& getCommandPool() { return commandPool; }
@@ -40,6 +41,8 @@ public:
     const VkSemaphore& getCurrentRenderFinishedSemaphores() { return renderFinishedSemaphores[currentFrame]; }
     const VkSemaphore& getCurrentComputeFinishedSemaphores() { return computeFinishedSemaphores[currentFrame]; }
 
+    const VkCommandBuffer& getCopyCommandBuffer() { return copyCommandBuffer; };
+
     void incrementeCurrentFrame();
 
 private:
@@ -47,13 +50,17 @@ private:
     
     std::vector<VkCommandBuffer> commandBuffers;
     std::vector<bool> commandBufferState;
+
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;
     std::vector<VkFence> inFlightFences;
 
     std::vector<VkCommandBuffer> computeCommandBuffers;
+
     std::vector<VkSemaphore> computeFinishedSemaphores;
     std::vector<VkFence> computeInFlightFences;
+
+    VkCommandBuffer copyCommandBuffer;
 
     uint32_t currentFrame;    
 };

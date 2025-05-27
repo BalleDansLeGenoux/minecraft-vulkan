@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "graphics/buffer_manager.h"
+
 Chunk* ChunkManager::addChunk(glm::ivec3 pos) {
     std::string id = getStringFromIvec(pos);
     auto chunk = std::make_unique<Chunk>(pos);
@@ -32,6 +34,7 @@ void ChunkManager::upload() {
     for (auto& [key, chunk] : chunks) {
         chunk->upload();
     }
+    BufferManager::get().applyCopies();
 }
 
 Chunk* ChunkManager::getChunk(glm::ivec3 pos) {

@@ -34,6 +34,7 @@ public:
     void init();
     int  allocMesh(Mesh& mesh, int pid);
     void freeMesh(int pid);
+    void resetStagingOffset() { _stagingOffset = 0; };
 
     void cleanup();
 
@@ -55,6 +56,8 @@ private:
     uint32_t _nbIndirectBlock;
 
     uint32_t _id;
+
+    uint32_t _stagingOffset;
 
     std::unordered_map<uint32_t, AllocInfo> _used;
     std::vector<AllocInfo> _freeList;

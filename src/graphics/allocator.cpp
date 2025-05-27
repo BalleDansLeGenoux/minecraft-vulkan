@@ -10,22 +10,21 @@ Allocator::Allocator(int p_usage, uint32_t p_nbBlock, uint32_t p_blockSize, std:
 : _blockSize(p_blockSize), _staging(std::make_optional(p_staging)), _size(p_nbBlock*p_blockSize)
 {
     _buffer.createBuffer(_size, p_usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-    static int tmp = 0;
 }
 
-void Allocator::alloc(void* p_data, uint32_t p_nbBlock, uint32_t p_offset) {
-    if (p_offset > _size) throw std::runtime_error("Dépassement de mémoire GPU");
-
+void Allocator::alloc(void* p_data, uint32_t p_nbBlock, uint32_t p_srcOffset, uint32_t p_dstOffset) {
     uint32_t size = p_nbBlock * _blockSize;
+
+    if (p_dstOffset + size > _size || p_srcOffset + size > _staging.value().get().getSize())
+        throw std::runtime_error("Allocator::alloc -> Buffer overflow GPU !");
 
     void* data;
     
-    vkMapMemory(Device::get().getDevice(), _staging.value().get().getBufferMemory(), 0, size, 0, &data);
+    vkMapMemory(Device::get().getDevice(), _staging.value().get().getBufferMemory(), p_srcOffset, size, 0, &data);
     memcpy(data, p_data, size);
     vkUnmapMemory(Device::get().getDevice(), _staging.value().get().getBufferMemory());
 
-    BufferManager::copyBuffer(_staging.value().get(), _buffer, size, 0, p_offset * _blockSize);
+    BufferManager::copyBuffer(_staging.value().get(), _buffer, size, p_srcOffset, p_dstOffset * _blockSize);
 }
 
 void Allocator::extractData(void* p_dst, uint32_t p_nbBlock, uint32_t p_offset) {

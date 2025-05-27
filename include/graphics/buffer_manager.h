@@ -5,11 +5,18 @@
 #include <vector>
 
 #include "engine/mesh.h"
+#include "graphics/buffer.h"
 #include "graphics/uniform_buffer.h"
 #include "graphics/block_update.h"
 #include "graphics/allocators_manager.h"
 
-class Buffer;
+struct CopyInfo {
+    VkBuffer srcBuffer;
+    VkBuffer dstBuffer;
+    VkDeviceSize size;
+    VkDeviceSize srcOffset;
+    VkDeviceSize dstOffset;
+};
 
 class BufferManager {
 public:
@@ -25,8 +32,10 @@ public:
     void updateUniformBuffer(glm::vec3 camPos, glm::mat4 matrix, glm::vec3 sunPos, glm::vec3 moonPos);
     void cleanupUniformBuffer();
 
-    static void copyBuffer(Buffer srcBuffer, Buffer dstBuffer, VkDeviceSize size);
-    static void copyBuffer(Buffer srcBuffer, Buffer dstBuffer, VkDeviceSize size, VkDeviceSize srcOffset, VkDeviceSize dstOffset);
+    void applyCopies();
+
+    static void copyBuffer(Buffer& srcBuffer, Buffer& dstBuffer, VkDeviceSize size);
+    static void copyBuffer(Buffer& srcBuffer, Buffer& dstBuffer, VkDeviceSize size, VkDeviceSize srcOffset, VkDeviceSize dstOffset);
     static VkCommandBuffer beginSingleTimeCommands();
     static void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 
@@ -47,6 +56,9 @@ private:
     Buffer voxelBuffer;
     Buffer updateVoxelBuffer;
     std::vector<UniformBuffer> uniformBuffers;
+    
+    static std::vector<CopyInfo> pendingCopy;
+
 };
 
 #endif

@@ -10,7 +10,7 @@
 #include "engine/mesh.h"
 
 void AllocatorManager::init() {
-    _staging.createBuffer(NB_FACE_CHUNK * 4*sizeof(Vertex),
+    _staging.createBuffer(300000000,
         VK_BUFFER_USAGE_TRANSFER_DST_BIT |
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
@@ -45,6 +45,7 @@ void AllocatorManager::init() {
     _id = 0;
     _nbDataBlock = 0;
     _nbIndirectBlock = 0;
+    _stagingOffset = 0;
 }
 
 int  AllocatorManager::allocMesh(Mesh& mesh, int pid) {
@@ -92,9 +93,14 @@ int  AllocatorManager::allocMesh(Mesh& mesh, int pid) {
     indirectCommand.vertexOffset = static_cast<uint32_t>(infos.dataBlock * NB_VERTEX_PER_BLOCK);
     indirectCommand.indexOffset = static_cast<uint32_t>(infos.dataBlock * NB_INDEX_PER_BLOCK);
 
-    _vertexAllocator.alloc(vertex.data(), nbBlock, infos.dataBlock);
-    _indexAllocator.alloc(index.data(), nbBlock, infos.dataBlock);
-    _indirectAllocator.alloc(&indirectCommand, 1, infos.indirectBlock);
+    _vertexAllocator.alloc(vertex.data(), nbBlock, _stagingOffset, infos.dataBlock);
+    _stagingOffset += nbBlock * _vertexAllocator.getBlockSize();
+
+    _indexAllocator.alloc(index.data(), nbBlock, _stagingOffset, infos.dataBlock);
+    _stagingOffset += nbBlock * _indexAllocator.getBlockSize();
+
+    _indirectAllocator.alloc(&indirectCommand, 1, _stagingOffset, infos.indirectBlock);
+    _stagingOffset += _indirectAllocator.getBlockSize();
 
     return out;
 }
@@ -158,7 +164,9 @@ void AllocatorManager::freeIndirectBlock(uint32_t p_offset) {
     indirectCommand.vertexOffset = 0;
     indirectCommand.firstInstance = 0;
 
-    _indirectAllocator.alloc(&indirectCommand, 1, p_offset);
+    _indirectAllocator.alloc(&indirectCommand, 1, _stagingOffset, p_offset);
+
+    _stagingOffset += _indirectAllocator.getBlockSize();
 }
 
 void AllocatorManager::cleanup() {

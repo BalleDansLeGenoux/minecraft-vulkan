@@ -40,8 +40,8 @@ void procedural() {
 
 void flat() {
     Chunk* chunk;
-    for (int cx = 0; cx < 4; cx++) {
-        for (int cy = 0; cy < 4; cy++) {
+    for (int cx = 0; cx < 1; cx++) {
+        for (int cy = 0; cy < 1; cy++) {
             chunk = ChunkManager::get().addChunk({cx, 0, cy});
 
             for (int x = 0; x < CHUNK_SIZE; x++) {
@@ -78,6 +78,7 @@ void run(VulkanApp& app) {
     total += timeOf(procedural, "Temps de génération du monde : ");
     total += timeOf(update, "Temps de crétion des mesh : ");
     total += timeOf(upload, "Temps de d'allocation GPU : ");
+    total += timeOf(upload, "Temps de de réallocation GPU : ");
 
     std::cout << "Temps total : " << total << std::endl;
 

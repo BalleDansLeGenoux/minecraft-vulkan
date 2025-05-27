@@ -4,10 +4,11 @@
 #include <string.h>
 
 #include "core/config.h"
-#include "graphics/buffer.h"
 #include "graphics/vertex.h"
 #include "graphics/renderer.h"
 #include "graphics/device.h"
+
+std::vector<CopyInfo> BufferManager::pendingCopy;
 
 void BufferManager::createBuffers() {
     allocator.init();
@@ -39,6 +40,39 @@ void BufferManager::createUniformBuffers() {
 
 void BufferManager::updateUniformBuffer(glm::vec3 camPos, glm::mat4 matrix, glm::vec3 sunPos, glm::vec3 moonPos) {
     uniformBuffers.at(Renderer::get().getCurrentFrame()).updateUniformBuffer(camPos, matrix, sunPos, moonPos);
+}
+
+void BufferManager::applyCopies() {
+    if (pendingCopy.size() <= 0) return;
+
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    vkBeginCommandBuffer(Renderer::get().getCopyCommandBuffer(), &beginInfo);
+
+    for (CopyInfo infos : pendingCopy) {
+        VkBufferCopy copyRegion {};
+        copyRegion.size = infos.size;
+        copyRegion.srcOffset = infos.srcOffset;
+        copyRegion.dstOffset = infos.dstOffset;
+        vkCmdCopyBuffer(Renderer::get().getCopyCommandBuffer(), infos.srcBuffer, infos.dstBuffer, 1, &copyRegion);
+    }
+
+    pendingCopy.clear();
+
+    vkEndCommandBuffer(Renderer::get().getCopyCommandBuffer());
+
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &Renderer::get().getCopyCommandBuffer();
+
+    vkQueueSubmit(Device::get().getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(Device::get().getGraphicsQueue());
+
+    Renderer::get().resetCopyCommandBuffer();
+    allocator.resetStagingOffset();
 }
 
 void BufferManager::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
@@ -76,21 +110,20 @@ void BufferManager::createImage(uint32_t width, uint32_t height, VkFormat format
     vkBindImageMemory(Device::get().getDevice(), image, imageMemory, 0);
 }
 
-void BufferManager::copyBuffer(Buffer srcBuffer, Buffer dstBuffer, VkDeviceSize size) {
+void BufferManager::copyBuffer(Buffer& srcBuffer, Buffer& dstBuffer, VkDeviceSize size) {
     copyBuffer(srcBuffer, dstBuffer, size, 0, 0);
 }
 
-void BufferManager::copyBuffer(Buffer srcBuffer, Buffer dstBuffer, VkDeviceSize size, VkDeviceSize srcOffset, VkDeviceSize dstOffset) {
+void BufferManager::copyBuffer(Buffer& srcBuffer, Buffer& dstBuffer, VkDeviceSize size, VkDeviceSize srcOffset, VkDeviceSize dstOffset) {
     if (size <= 0 || size+dstOffset > dstBuffer.getSize() || size+srcOffset > srcBuffer.getSize()) throw std::runtime_error("BufferManager::copyBuffer() -> GPU buffer overflow !");
-    VkCommandBuffer commandBuffer = beginSingleTimeCommands();
-
-    VkBufferCopy copyRegion{};
-    copyRegion.size = size;
-    copyRegion.srcOffset = srcOffset;
-    copyRegion.dstOffset = dstOffset;
-    vkCmdCopyBuffer(commandBuffer, srcBuffer.getBuffer(), dstBuffer.getBuffer(), 1, &copyRegion);
-
-    endSingleTimeCommands(commandBuffer);
+    
+    pendingCopy.push_back({
+        srcBuffer.getBuffer(),
+        dstBuffer.getBuffer(),
+        size,
+        srcOffset,
+        dstOffset
+    });
 }
 
 VkCommandBuffer BufferManager::beginSingleTimeCommands() {
