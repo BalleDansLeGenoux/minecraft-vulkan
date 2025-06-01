@@ -12,8 +12,8 @@ class Chunk {
 public:
     Chunk() {}
     
-    Chunk(glm::ivec3 ppos)
-    : pos(ppos), allocId(-1) {}
+    Chunk(glm::ivec3 p_pos)
+    : _pos(p_pos), _opaque_alloc_id(-1), _transparent_alloc_id(-1) {}
 
     void init();
     void addVoxel(glm::ivec3 pos, Voxel voxel);
@@ -21,18 +21,21 @@ public:
     void upload();
     void cleanup();
 
-    glm::ivec3 getPos()                      { return pos; }
-    int        getAllocInfoOffset()          { return allocId; }
-    Voxel      getVoxel(int x, int y, int z) { return voxels[x][y][z]; }
-    Voxel      getVoxel(glm::vec3 pos)       { return getVoxel(pos.x, pos.y, pos.z); }
+    glm::ivec3 getPos()                      { return _pos; }
+    int        getOpaqueAllocId()            { return _opaque_alloc_id; }
+    int        getTransparentAllocId()       { return _transparent_alloc_id; }
+    Voxel      getVoxel(int x, int y, int z) { return _voxels[x][y][z]; }
+    Voxel      getVoxel(glm::vec3 p_pos)     { return getVoxel(p_pos.x, p_pos.y, p_pos.z); }
 
 private:
-    glm::ivec3 pos;
+    glm::ivec3 _pos;
 
-    Voxel voxels[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
-    Mesh mesh;
+    Voxel _voxels[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
+    Mesh _opaque_mesh;
+    Mesh _transparent_mesh;
 
-    int allocId;
+    int _opaque_alloc_id;
+    int _transparent_alloc_id;
 };
 
 #endif

@@ -43,16 +43,26 @@ public:
     static uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 
-    Buffer& getVertexBuffers()               { return allocator.getVertexBuffer(); }
-    Buffer& getIndexBuffers()                { return allocator.getIndexBuffer(); }
+    AllocatorManager& getAllocator()         { return _opaque_allocator; }
+    Buffer& getVertexBuffers()               { return _opaque_allocator.getVertexBuffer(); }
+    Buffer& getIndexBuffers()                { return _opaque_allocator.getIndexBuffer(); }
+
+    AllocatorManager& getTransparentAllocator() { return _transparent_allocator; }
+    Buffer& getTransparentVertexBuffers()               { return _transparent_allocator.getVertexBuffer(); }
+    Buffer& getTransparentIndexBuffers()                { return _transparent_allocator.getIndexBuffer(); }
+
     Buffer& getVoxelBuffer()                 { return voxelBuffer; }
     Buffer& getUpdateVoxelBuffer()           { return updateVoxelBuffer; }
-    AllocatorManager& getAllocator()         { return allocator; }
     UniformBuffer& getUniformBuffer(int i)   { return uniformBuffers[i]; }
 
 
+
+
 private:
-    AllocatorManager allocator;
+    AllocatorManager _opaque_allocator;
+    AllocatorManager _transparent_allocator;
+
+
     Buffer voxelBuffer;
     Buffer updateVoxelBuffer;
     std::vector<UniformBuffer> uniformBuffers;

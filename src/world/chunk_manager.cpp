@@ -6,6 +6,8 @@
 
 Chunk* ChunkManager::addChunk(glm::ivec3 pos) {
     std::string id = getStringFromIvec(pos);
+    auto it = chunks.find(id);
+    if (it != chunks.end() && it->second) return it->second.get();
     auto chunk = std::make_unique<Chunk>(pos);
     chunk->init();
     chunks[id] = std::move(chunk);
@@ -34,7 +36,6 @@ void ChunkManager::upload() {
     for (auto& [key, chunk] : chunks) {
         chunk->upload();
     }
-    BufferManager::get().applyCopies();
 }
 
 Chunk* ChunkManager::getChunk(glm::ivec3 pos) {

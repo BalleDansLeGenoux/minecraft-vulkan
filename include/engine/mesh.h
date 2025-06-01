@@ -13,20 +13,18 @@
 
 class Mesh {
 public:
-    void cullingMeshing(glm::vec3 chunkPos, Voxel voxels[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE]);
-    void greedyMeshing(glm::vec3 chunkPos, Voxel voxels[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE]);
+    void addQuad(glm::vec3 p_pos, FacePosition p_face_pos, glm::vec3 p_normal, FaceTextureData p_uv, float p_shininess);
     
     void clear();
 
-    std::vector<Vertex>&   getVertex() { return vertex; }
-    std::vector<uint32_t>& getIndex()  { return index; }
-    bool isEmpty() { return (!vertex.size()); }
+    std::vector<Vertex>&   getVertex() { return _vertex; }
+    std::vector<uint32_t>& getIndex()  { return _index; }
+    bool isEmpty() { return (! _vertex.size()); }
 
 private:
-    std::vector<Vertex> vertex;
-    std::vector<uint32_t> index;
+    std::vector<Vertex> _vertex;
+    std::vector<uint32_t> _index;
 
-    void addQuad(glm::vec3 pos, FacePosition face_pos, glm::vec3 normal, FaceTextureData uv, float shininess);
     void addIndex();
 };
 

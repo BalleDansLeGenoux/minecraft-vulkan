@@ -39,5 +39,10 @@ std::vector<CubeTextureData> TEXTURE_COORD = {
         getCoord(1, 3),
         getCoord(1, 3),
         getCoord(1, 3)
+    },
+    {
+        getCoord(4, 3),
+        getCoord(4, 3),
+        getCoord(4, 3)
     }
 };

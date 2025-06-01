@@ -8,6 +8,7 @@
 struct VoxelData {
     int textures;
     float shininess;
+    bool transparent;
 };
 
 extern std::vector<VoxelData> VOXEL_DATAS;

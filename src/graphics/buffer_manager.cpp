@@ -11,7 +11,8 @@
 std::vector<CopyInfo> BufferManager::pendingCopy;
 
 void BufferManager::createBuffers() {
-    allocator.init();
+    _opaque_allocator.init();
+    _transparent_allocator.init();
 
     VkDeviceSize bufferSize = 1;
 
@@ -72,7 +73,7 @@ void BufferManager::applyCopies() {
     vkQueueWaitIdle(Device::get().getGraphicsQueue());
 
     Renderer::get().resetCopyCommandBuffer();
-    allocator.resetStagingOffset();
+    _opaque_allocator.resetStagingOffset();
 }
 
 void BufferManager::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
@@ -173,7 +174,8 @@ uint32_t BufferManager::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlag
 }
 
 void BufferManager::cleanupBuffers() {
-    allocator.cleanup();
+    _opaque_allocator.cleanup();
+    _transparent_allocator.cleanup();
     voxelBuffer.cleanup();
     updateVoxelBuffer.cleanup();
 }

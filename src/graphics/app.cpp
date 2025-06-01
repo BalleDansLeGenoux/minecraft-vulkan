@@ -49,6 +49,7 @@ void VulkanApp::initVulkan() {
     GraphicPipeline::get().createRenderPass();
     GraphicPipeline::get().createDescriptorSetLayout();
     GraphicPipeline::get().createGraphicsPipeline();
+
     ComputePipeline::get().createDescriptorSetLayout();
     ComputePipeline::get().createComputePipeline();
 
@@ -72,6 +73,7 @@ void VulkanApp::initVulkan() {
 } 
 
 void VulkanApp::render() {
+    BufferManager::get().applyCopies();
     updateDeltaTime();
     glfwPollEvents();
     camera.update(deltaTime);
@@ -199,10 +201,12 @@ void VulkanApp::drawFrame() {
 }
 
 void VulkanApp::recordCommandBuffer(uint32_t imageIndex) {
+    auto command = Renderer::get().getCurrentCommandBuffers();
+
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-    if (vkBeginCommandBuffer(Renderer::get().getCurrentCommandBuffers(), &beginInfo) != VK_SUCCESS) {
+    if (vkBeginCommandBuffer(command, &beginInfo) != VK_SUCCESS) {
         throw std::runtime_error("failed to begin recording command buffer!");
     }
 
@@ -221,9 +225,7 @@ void VulkanApp::recordCommandBuffer(uint32_t imageIndex) {
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
     renderPassInfo.pClearValues = clearValues.data();
 
-    vkCmdBeginRenderPass(Renderer::get().getCurrentCommandBuffers(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-        vkCmdBindPipeline(Renderer::get().getCurrentCommandBuffers(), VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicPipeline::get().getGraphicsPipeline());
+    vkCmdBeginRenderPass(command, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
         VkViewport viewport{};
         viewport.x = 0.0f;
@@ -232,31 +234,44 @@ void VulkanApp::recordCommandBuffer(uint32_t imageIndex) {
         viewport.height = (float) Swapchain::get().getSwapChainExtent().height;
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
-        vkCmdSetViewport(Renderer::get().getCurrentCommandBuffers(), 0, 1, &viewport);
+        vkCmdSetViewport(command, 0, 1, &viewport);
 
         VkRect2D scissor{};
         scissor.offset = {0, 0};
         scissor.extent = Swapchain::get().getSwapChainExtent();
-        vkCmdSetScissor(Renderer::get().getCurrentCommandBuffers(), 0, 1, &scissor);
+        vkCmdSetScissor(command, 0, 1, &scissor);
 
         VkBuffer vertexBuffers[] = {BufferManager::get().getVertexBuffers().getBuffer()};
         VkDeviceSize offsets[] = {0};
 
-        vkCmdBindVertexBuffers(Renderer::get().getCurrentCommandBuffers(), 0, 1, vertexBuffers, offsets);
-        vkCmdBindIndexBuffer(Renderer::get().getCurrentCommandBuffers(), BufferManager::get().getIndexBuffers().getBuffer(), 0, VK_INDEX_TYPE_UINT32);
-        vkCmdBindDescriptorSets(Renderer::get().getCurrentCommandBuffers(), VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicPipeline::get().getPipelineLayout(), 0, 1, &(Descriptor::get().getDescriptorSets())[Renderer::get().getCurrentFrame()], 0, nullptr);
+        vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicPipeline::get().getOpaquePipeline());
+        vkCmdBindVertexBuffers(command, 0, 1, vertexBuffers, offsets);
+        vkCmdBindIndexBuffer(command, BufferManager::get().getIndexBuffers().getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+        vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicPipeline::get().getOpaquePipelineLayout(), 0, 1, &(Descriptor::get().getDescriptorSets())[Renderer::get().getCurrentFrame()], 0, nullptr);
 
         vkCmdDrawIndexedIndirect(
-            Renderer::get().getCurrentCommandBuffers(),
+            command,
             BufferManager::get().getAllocator().getIndirectBuffer().getBuffer(),
             0,
             BufferManager::get().getAllocator().getIndirectCount(),
             sizeof(DrawIndirectCommand)
         );
 
-    vkCmdEndRenderPass(Renderer::get().getCurrentCommandBuffers());
+        vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicPipeline::get().getTransparentPipeline());
+        vkCmdBindVertexBuffers(command, 0, 1, &BufferManager::get().getTransparentVertexBuffers().getBuffer(), (VkDeviceSize[]){0});
+        vkCmdBindIndexBuffer(command, BufferManager::get().getTransparentIndexBuffers().getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+        vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, GraphicPipeline::get().getTransparentPipelineLayout(), 0, 1, &Descriptor::get().getDescriptorSets()[Renderer::get().getCurrentFrame()], 0, nullptr);
 
-    if (vkEndCommandBuffer(Renderer::get().getCurrentCommandBuffers()) != VK_SUCCESS) {
+        vkCmdDrawIndexedIndirect(command,
+            BufferManager::get().getTransparentAllocator().getIndirectBuffer().getBuffer(),
+            0,
+            BufferManager::get().getTransparentAllocator().getIndirectCount(),
+            sizeof(DrawIndirectCommand)
+        );
+
+    vkCmdEndRenderPass(command);
+
+    if (vkEndCommandBuffer(command) != VK_SUCCESS) {
         throw std::runtime_error("failed to record command buffer!");
     }
 }

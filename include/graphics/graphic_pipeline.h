@@ -26,15 +26,23 @@ public:
     VkRenderPass getRenderPass() const { return renderPass; }
 
     const VkDescriptorSetLayout& getDescriptorSetLayout() { return descriptorSetLayout; }
-    const VkPipeline& getGraphicsPipeline() { return graphicsPipeline; }
-    const VkPipelineLayout& getPipelineLayout() { return pipelineLayout; }
+
+    const VkPipeline& getOpaquePipeline() { return opaquePipeline; }
+    const VkPipelineLayout& getOpaquePipelineLayout() { return opaquePipelineLayout; }
+
+    const VkPipeline& getTransparentPipeline() { return transparentPipeline; }
+    const VkPipelineLayout& getTransparentPipelineLayout() { return transparentPipelineLayout; }
 
 private:
     VkRenderPass renderPass;
 
     VkDescriptorSetLayout descriptorSetLayout;
-    VkPipelineLayout pipelineLayout;
-    VkPipeline graphicsPipeline;
+
+    VkPipelineLayout opaquePipelineLayout;
+    VkPipeline opaquePipeline;
+
+    VkPipelineLayout transparentPipelineLayout;
+    VkPipeline transparentPipeline;
 };
 
 #endif // VULKAN_PIPELINE_H

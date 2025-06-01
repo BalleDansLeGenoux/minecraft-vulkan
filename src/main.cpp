@@ -21,21 +21,35 @@ void upload() {
 }
 
 void procedural() {
-    int size = 28;
+    int size = 20;
     ProceduralGenerator p;
     for (int x = -(size/2); x < size/2; x++) {
         for (int y = -(size/2); y < size/2; y++) {
             p.generateChunk({x, y});
         }
     }
+}
 
+void test() {
     Chunk* chunk = ChunkManager::get().addChunk({0, 6, 0});
 
     for (int x = 0; x < CHUNK_SIZE; x++) {
         for (int z = 0; z < CHUNK_SIZE; z++) {
-            chunk->addVoxel({x, 0, z}, 6);
+            chunk->addVoxel({x, 0, z}, 7);
         }
     }
+
+    chunk->update();
+    chunk->upload();
+}
+
+void test2() {
+    Chunk* chunk = ChunkManager::get().addChunk({0, 6, 0});
+
+    chunk->addVoxel({0, 1, 0}, 3);
+
+    chunk->update();
+    chunk->upload();
 }
 
 void flat() {
@@ -78,9 +92,12 @@ void run(VulkanApp& app) {
     total += timeOf(procedural, "Temps de génération du monde : ");
     total += timeOf(update, "Temps de crétion des mesh : ");
     total += timeOf(upload, "Temps de d'allocation GPU : ");
-    total += timeOf(upload, "Temps de de réallocation GPU : ");
+    // total += timeOf(upload, "Temps de de réallocation GPU : ");
 
     std::cout << "Temps total : " << total << std::endl;
+
+    test();
+    test2();
 
     // ------------------------------------------------------------------ //
 
