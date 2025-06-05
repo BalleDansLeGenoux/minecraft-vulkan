@@ -42,5 +42,17 @@ std::vector<VoxelData> VOXEL_DATAS = {
         6,
         0.0f,
         true
+    },
+    // Water -> 8
+    {
+        7,
+        200.0f,
+        true
+    },
+    // Sand -> 9
+    {
+        8,
+        0.0f,
+        false
     }
 };

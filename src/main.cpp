@@ -21,7 +21,7 @@ void upload() {
 }
 
 void procedural() {
-    int size = 20;
+    int size = 27;
     ProceduralGenerator p;
     for (int x = -(size/2); x < size/2; x++) {
         for (int y = -(size/2); y < size/2; y++) {
@@ -36,6 +36,7 @@ void test() {
     for (int x = 0; x < CHUNK_SIZE; x++) {
         for (int z = 0; z < CHUNK_SIZE; z++) {
             chunk->addVoxel({x, 0, z}, 7);
+            chunk->addVoxel({x, 1, z}, 8);
         }
     }
 
@@ -82,8 +83,10 @@ double timeOf(void (*func)(), std::string msg) {
     return elapsed.count();
 }
 
-void run(VulkanApp& app) {
-    app.init();
+void run() {
+    VulkanApp& app = VulkanApp::get();
+
+    app.init({0, 10.0f, 0}, 70);
 
     // ------------------------ Temps Allocation ------------------------ //
 
@@ -96,8 +99,8 @@ void run(VulkanApp& app) {
 
     std::cout << "Temps total : " << total << std::endl;
 
-    test();
-    test2();
+    // test();
+    // test2();
 
     // ------------------------------------------------------------------ //
 
@@ -116,23 +119,21 @@ void run(VulkanApp& app) {
             frameCount = 0;
             lastTime = currentTime;
         }
+
+        ChunkManager::get().update();
+        ChunkManager::get().upload();
+
+        Renderer::get().resetCommandBuffers();
     
         app.render();
     }
 
-    std::cout << std::endl;
-
     app.cleanup();
 }
 
-int main(int argc, char const *argv[])
-{
-    std::vector<BlockUpdate> tmp;
-
-    VulkanApp app({0, 10.0f, 0}, 70, tmp);
-
+int main(int argc, char const *argv[]) {
     try {
-        run(app);
+        run();
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;

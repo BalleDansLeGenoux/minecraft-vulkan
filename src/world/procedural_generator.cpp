@@ -33,20 +33,37 @@ void ProceduralGenerator::generateChunk(glm::vec2 pos) {
                 height += static_cast<int>(value*PROCEDURAL_AMPLITUDE*std::pow(PROCEDURAL_PERSISTENCE, i));
             }
 
-            height += CHUNK_SIZE;
+            // height += CHUNK_SIZE;
 
-            for (int i = 0; i < height-2; i++) {
-                if ((chunk = ChunkManager::get().getChunk({pos.x, i/CHUNK_SIZE, pos.y})) == nullptr) chunk = ChunkManager::get().addChunk({pos.x, i/CHUNK_SIZE, pos.y});
-                chunk->addVoxel({x, i%CHUNK_SIZE, z}, 3);
+            if (height <= 50) {
+                for (int i = 0; i < height-5; i++) {
+                    if ((chunk = ChunkManager::get().getChunk({pos.x, i/CHUNK_SIZE, pos.y})) == nullptr) chunk = ChunkManager::get().addChunk({pos.x, i/CHUNK_SIZE, pos.y});
+                    chunk->addVoxel({x, i%CHUNK_SIZE, z}, 3);
+                }
+    
+                for (int i = height-5; i < height+1; i++) {
+                    if ((chunk = ChunkManager::get().getChunk({pos.x, i/CHUNK_SIZE, pos.y})) == nullptr) chunk = ChunkManager::get().addChunk({pos.x, i/CHUNK_SIZE, pos.y});
+                    chunk->addVoxel({x, i%CHUNK_SIZE, z}, 9);
+                }
+    
+                for (int i = height+1; i < 48; i++) {
+                    if ((chunk = ChunkManager::get().getChunk({pos.x, i/CHUNK_SIZE, pos.y})) == nullptr) chunk = ChunkManager::get().addChunk({pos.x, i/CHUNK_SIZE, pos.y});
+                    chunk->addVoxel({x, i%CHUNK_SIZE, z}, 8);
+                }
+            } else {
+                for (int i = 0; i < height-2; i++) {
+                    if ((chunk = ChunkManager::get().getChunk({pos.x, i/CHUNK_SIZE, pos.y})) == nullptr) chunk = ChunkManager::get().addChunk({pos.x, i/CHUNK_SIZE, pos.y});
+                    chunk->addVoxel({x, i%CHUNK_SIZE, z}, 3);
+                }
+
+                for (int i = height-2; i < height; i++) {
+                    if ((chunk = ChunkManager::get().getChunk({pos.x, i/CHUNK_SIZE, pos.y})) == nullptr) chunk = ChunkManager::get().addChunk({pos.x, i/CHUNK_SIZE, pos.y});
+                    chunk->addVoxel({x, i%CHUNK_SIZE, z}, 2);
+                }
+
+                if ((chunk = ChunkManager::get().getChunk({pos.x, height/CHUNK_SIZE, pos.y})) == nullptr) chunk = ChunkManager::get().addChunk({pos.x, height/CHUNK_SIZE, pos.y});
+                chunk->addVoxel({x, height%CHUNK_SIZE, z}, 1);
             }
-
-            for (int i = height-2; i < height; i++) {
-                if ((chunk = ChunkManager::get().getChunk({pos.x, i/CHUNK_SIZE, pos.y})) == nullptr) chunk = ChunkManager::get().addChunk({pos.x, i/CHUNK_SIZE, pos.y});
-                chunk->addVoxel({x, i%CHUNK_SIZE, z}, 2);
-            }
-
-            if ((chunk = ChunkManager::get().getChunk({pos.x, height/CHUNK_SIZE, pos.y})) == nullptr) chunk = ChunkManager::get().addChunk({pos.x, height/CHUNK_SIZE, pos.y});
-            chunk->addVoxel({x, height%CHUNK_SIZE, z}, 1);
         }
     }
 }

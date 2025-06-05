@@ -27,6 +27,7 @@ void Allocator::alloc(void* p_data, uint32_t p_nbBlock, uint32_t p_srcOffset, ui
     BufferManager::copyBuffer(_staging.value().get(), _buffer, size, p_srcOffset, p_dstOffset * _blockSize);
 }
 
+// Fonctionne plus (copyBuffer ne se fait plus directement, faut faire un applyCopies)
 void Allocator::extractData(void* p_dst, uint32_t p_nbBlock, uint32_t p_offset) {
     uint32_t size = p_nbBlock * _blockSize;
 

@@ -117,7 +117,6 @@ void Renderer::createFramebuffers() {
 
 void Renderer::resetCommandBuffers() {
     for (int i = 0; i < FRAME_IN_FLIGHT; i++) {
-        vkResetCommandBuffer(commandBuffers[i], 0);
         commandBufferState[i] = false;
     }
 }

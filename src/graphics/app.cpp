@@ -22,6 +22,8 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 
+#include "world/chunk_manager.h"
+
 void VulkanApp::initWindow() {
     glfwInit();
 
@@ -80,7 +82,10 @@ void VulkanApp::render() {
     drawFrame();
 }
 
-void VulkanApp::init() {
+void VulkanApp::init(glm::vec3 posCamera, float fov) {
+    generated = 0;
+    camera = Camera(posCamera, fov, 0);
+
     initWindow();
     initVulkan();
 
@@ -110,8 +115,6 @@ void VulkanApp::cleanup() {
 void VulkanApp::drawFrame() {
     std::vector<VkSemaphore> waitSemaphores = {Renderer::get().getCurrentImageAvailableSemaphores()};
     std::vector<VkPipelineStageFlags> waitStages = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-
-    // if (!generated) computeShader(waitSemaphores, waitStages);
 
     vkWaitForFences(
         Device::get().getDevice(),
@@ -195,8 +198,6 @@ void VulkanApp::drawFrame() {
         throw std::runtime_error("failed to present swap chain image!");
     }
 
-    // std::cout << "[DEBUG]" << imageIndex << " | " << Renderer::get().getCurrentFrame() << std::endl;
-
     Renderer::get().incrementeCurrentFrame();
 }
 
@@ -219,7 +220,6 @@ void VulkanApp::recordCommandBuffer(uint32_t imageIndex) {
 
     std::array<VkClearValue, 2> clearValues{};
     clearValues[0].color = {{0.0f, 0.0f, 1.0f, 1.0f}};
-    // clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
     clearValues[1].depthStencil = {1.0f, 0};
 
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
@@ -274,54 +274,6 @@ void VulkanApp::recordCommandBuffer(uint32_t imageIndex) {
     if (vkEndCommandBuffer(command) != VK_SUCCESS) {
         throw std::runtime_error("failed to record command buffer!");
     }
-}
-
-void VulkanApp::recordComputeCommandBuffer() {
-    VkCommandBufferBeginInfo beginInfo{};
-    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-    if (vkBeginCommandBuffer(Renderer::get().getCurrentComputeCommandBuffers(), &beginInfo) != VK_SUCCESS) {
-        throw std::runtime_error("failed to begin recording compute command buffer!");
-    }
-
-    vkCmdBindPipeline(Renderer::get().getCurrentComputeCommandBuffers(), VK_PIPELINE_BIND_POINT_COMPUTE, ComputePipeline::get().getComputePipeline());
-
-    vkCmdBindDescriptorSets(Renderer::get().getCurrentComputeCommandBuffers(), VK_PIPELINE_BIND_POINT_COMPUTE, ComputePipeline::get().getComputePipelineLayout(), 0, 1, &Descriptor::get().getComputeDescriptorSets(), 0, nullptr);
-
-    uint32_t bufferSize = blockUpdate.size();
-    vkCmdPushConstants(Renderer::get().getCurrentComputeCommandBuffers(), ComputePipeline::get().getComputePipelineLayout(), VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &bufferSize);
-
-    vkCmdDispatch(Renderer::get().getCurrentComputeCommandBuffers(), blockUpdate.size(), 1, 1);
-
-    if (vkEndCommandBuffer(Renderer::get().getCurrentComputeCommandBuffers()) != VK_SUCCESS) {
-        throw std::runtime_error("failed to record compute command buffer!");
-    }
-}
-
-void VulkanApp::computeShader(std::vector<VkSemaphore>& waitSemaphores, std::vector<VkPipelineStageFlags>& waitStages) {
-    waitSemaphores.push_back(Renderer::get().getCurrentComputeFinishedSemaphores());
-    waitStages.push_back(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
-
-    generated = 1;
-     
-    vkWaitForFences(Device::get().getDevice(), 1, &Renderer::get().getCurrentComputeInFlightFences(), VK_TRUE, UINT64_MAX);
-    vkResetFences(Device::get().getDevice(), 1, &Renderer::get().getCurrentComputeInFlightFences());
-
-    vkResetCommandBuffer(Renderer::get().getCurrentComputeCommandBuffers(), 0);
-    recordComputeCommandBuffer();
-
-    VkSubmitInfo submitInfo{};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &Renderer::get().getCurrentComputeCommandBuffers();
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &Renderer::get().getCurrentComputeFinishedSemaphores();
-
-    if (vkQueueSubmit(Device::get().getComputeQueue(), 1, &submitInfo, Renderer::get().getCurrentComputeInFlightFences()) != VK_SUCCESS) {
-        throw std::runtime_error("failed to submit compute command buffer!");
-    };
-
-    std::cout << "Compute shader ok !" << std::endl;
 }
 
 void VulkanApp::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {

@@ -74,6 +74,7 @@ void BufferManager::applyCopies() {
 
     Renderer::get().resetCopyCommandBuffer();
     _opaque_allocator.resetStagingOffset();
+    _transparent_allocator.resetStagingOffset();
 }
 
 void BufferManager::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
@@ -116,7 +117,11 @@ void BufferManager::copyBuffer(Buffer& srcBuffer, Buffer& dstBuffer, VkDeviceSiz
 }
 
 void BufferManager::copyBuffer(Buffer& srcBuffer, Buffer& dstBuffer, VkDeviceSize size, VkDeviceSize srcOffset, VkDeviceSize dstOffset) {
-    if (size <= 0 || size+dstOffset > dstBuffer.getSize() || size+srcOffset > srcBuffer.getSize()) throw std::runtime_error("BufferManager::copyBuffer() -> GPU buffer overflow !");
+    if (size <= 0 || size+dstOffset > dstBuffer.getSize() || size+srcOffset > srcBuffer.getSize()) {
+        BufferManager::get().applyCopies();
+        return;
+        // throw std::runtime_error("BufferManager::copyBuffer() -> GPU buffer overflow !");
+    }
     
     pendingCopy.push_back({
         srcBuffer.getBuffer(),

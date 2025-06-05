@@ -24,6 +24,7 @@ public:
     static std::string getStringFromIvec(glm::ivec3 v);
 
     Chunk* getChunk(glm::ivec3 pos);
+    int getNumberOfChunk() { return chunks.size(); }
 
 private:
     std::unordered_map<std::string, std::unique_ptr<Chunk>> chunks;

@@ -5,18 +5,21 @@
 
 #include "core/config.h"
 #include "engine/mesh.h"
+#include "engine/sortable_mesh.h"
 #include "world/voxel.h"
 #include "graphics/allocator.h"
 
 class Chunk {
 public:
-    Chunk() {}
+    Chunk()
+    : _opaque_alloc_id(-1), _transparent_alloc_id(-1), _is_modify(false) {}
     
     Chunk(glm::ivec3 p_pos)
-    : _pos(p_pos), _opaque_alloc_id(-1), _transparent_alloc_id(-1) {}
+    : _pos(p_pos), _opaque_alloc_id(-1), _transparent_alloc_id(-1), _is_modify(false) {}
 
     void init();
-    void addVoxel(glm::ivec3 pos, Voxel voxel);
+    void addVoxel(glm::ivec3 p_pos, Voxel p_voxel);
+    void removeVoxel(glm::ivec3 p_pos) { addVoxel(p_pos, Voxel(0)); };
     void update();
     void upload();
     void cleanup();
@@ -32,10 +35,12 @@ private:
 
     Voxel _voxels[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
     Mesh _opaque_mesh;
-    Mesh _transparent_mesh;
+    SortableMesh _transparent_mesh;
 
     int _opaque_alloc_id;
     int _transparent_alloc_id;
+
+    bool _is_modify;
 };
 
 #endif

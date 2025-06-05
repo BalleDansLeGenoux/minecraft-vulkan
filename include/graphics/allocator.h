@@ -18,6 +18,8 @@ public:
     Allocator(int p_flag, uint32_t p_nbBlock, uint32_t p_blockSize, std::reference_wrapper<Buffer> p_staging);
     
     void alloc(void* p_data, uint32_t p_size, uint32_t p_srcOffset, uint32_t p_dstOffset);
+    
+    // Fonctionne plus (copyBuffer ne se fait plus directement, faut faire un applyCopies)
     void extractData(void* p_dst, uint32_t p_nbBlock, uint32_t p_offset);
 
     void cleanup();

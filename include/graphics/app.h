@@ -25,11 +25,15 @@
 
 class VulkanApp {
 public:
-    void init();
+    static VulkanApp& get() {
+        static VulkanApp instance;
+        return instance;
+    }
+
+    void init(glm::vec3 posCamera, float fov);
     void render();
     void drawFrame();
     void recordCommandBuffer(uint32_t imageIndex);
-    void recordComputeCommandBuffer();
     void cleanup();
 
     bool isRun() { return !glfwWindowShouldClose(window); };
@@ -37,10 +41,11 @@ public:
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 
     GLFWwindow* getWindow() const { return window; }
-    const float getDeltaTime() const {return deltaTime; }
+    const float getDeltaTime() const { return deltaTime; }
+    Camera* getCamera() { return &camera; }
 
-    VulkanApp(glm::vec3 posCamera, float fov, std::vector<BlockUpdate>& pblockUpdate) :
-    generated(0), camera(posCamera, fov, 0), blockUpdate(pblockUpdate) {}
+    VulkanApp()
+    : camera({0, 0, 0}, 0, 0) {};
 
 private:
     GLFWwindow* window;
@@ -62,8 +67,6 @@ private:
     static void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
     void updateDeltaTime();
-
-    std::vector<BlockUpdate>& blockUpdate;
 };
 
 #endif // VULKAN_APP_HPP

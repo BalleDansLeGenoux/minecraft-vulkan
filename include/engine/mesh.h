@@ -11,15 +11,22 @@
 #include "engine/face_position.h"
 #include "engine/texture_data.h"
 
+struct FaceData {
+    Vertex vertex[4];
+    float distance;
+    glm::vec3 center;
+};
+
 class Mesh {
 public:
-    void addQuad(glm::vec3 p_pos, FacePosition p_face_pos, glm::vec3 p_normal, FaceTextureData p_uv, float p_shininess);
+    void add(FaceData p_face);
+    virtual void add(glm::vec3 p_pos, FacePosition p_face_pos, glm::vec3 p_normal, FaceTextureData p_uv, float p_shininess);
     
     void clear();
 
     std::vector<Vertex>&   getVertex() { return _vertex; }
     std::vector<uint32_t>& getIndex()  { return _index; }
-    bool isEmpty() { return (! _vertex.size()); }
+    virtual bool isEmpty()  { return (! _vertex.size()); }
 
 private:
     std::vector<Vertex> _vertex;

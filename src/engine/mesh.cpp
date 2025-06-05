@@ -7,7 +7,18 @@
 #include "world/chunk.h"
 #include "world/chunk_manager.h"
 
-void Mesh::addQuad(glm::vec3 p_pos, FacePosition p_face_pos, glm::vec3 p_normal, FaceTextureData p_uv, float p_shininess) {
+void Mesh::add(FaceData p_face) {
+    addIndex();
+
+    _vertex.insert( _vertex.end(), {
+        p_face.vertex[0],
+        p_face.vertex[1],
+        p_face.vertex[2],
+        p_face.vertex[3]
+    });
+}
+
+void Mesh::add(glm::vec3 p_pos, FacePosition p_face_pos, glm::vec3 p_normal, FaceTextureData p_uv, float p_shininess) {
     addIndex();
 
     _vertex.insert( _vertex.end(), {
