@@ -1,10 +1,10 @@
 #ifndef CHUNK_MANAGER_H
 #define CHUNK_MANAGER_H
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <glm/glm.hpp>
-#include <memory>
 
 #include "world/chunk.h"
 
@@ -24,7 +24,6 @@ public:
     static std::string getStringFromIvec(glm::ivec3 v);
 
     Chunk* getChunk(glm::ivec3 pos);
-    int getNumberOfChunk() { return chunks.size(); }
 
 private:
     std::unordered_map<std::string, std::unique_ptr<Chunk>> chunks;

@@ -21,7 +21,7 @@ void upload() {
 }
 
 void procedural() {
-    int size = 27;
+    int size = 25;
     ProceduralGenerator p;
     for (int x = -(size/2); x < size/2; x++) {
         for (int y = -(size/2); y < size/2; y++) {
