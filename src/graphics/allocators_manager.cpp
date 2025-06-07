@@ -10,7 +10,7 @@
 #include "engine/mesh.h"
 
 void AllocatorManager::init() {
-    _staging.createBuffer(300000000,
+    _staging.createBuffer(1000000,
         VK_BUFFER_USAGE_TRANSFER_DST_BIT |
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
@@ -48,7 +48,7 @@ void AllocatorManager::init() {
     _stagingOffset = 0;
 }
 
-int  AllocatorManager::allocMesh(Mesh& mesh, int pid) {
+int AllocatorManager::allocMesh(Mesh& mesh, int pid) {
     auto& vertex = mesh.getVertex();
     auto& index = mesh.getIndex();
     uint32_t nbBlock = static_cast<uint32_t>(vertex.size()) / NB_VERTEX_PER_BLOCK;
@@ -61,31 +61,21 @@ int  AllocatorManager::allocMesh(Mesh& mesh, int pid) {
 
     AllocInfo infos;
 
-    // Dans le cas ou le chunk est allouer pour la première fois on lui attribut un id
     int out = pid;
     if (out == -1) {
-        // Dans le cas le chunk n'a pas encore été allouer
-
         if (_freeId.empty()) {
-            out = _id;
-            _id++;
+            out = _id++;
         } else {
             out = _freeId[0];
             _freeId.erase(_freeId.begin());
         }
-
         newAlloc(nbBlock, maxNbBlock, infos, out);
     } else {
-        // Dans le cas ou le chunk est deja alloue en memoire
-        
         infos = _used[out];
-
         if (nbBlock > infos.maxDataBlock) {
             _used.erase(out);
             _freeList.push_back(infos);
-
             freeIndirectBlock(infos.indirectBlock);
-
             newAlloc(nbBlock, maxNbBlock, infos, out);
         }
     }
@@ -93,14 +83,20 @@ int  AllocatorManager::allocMesh(Mesh& mesh, int pid) {
     indirectCommand.vertexOffset = static_cast<uint32_t>(infos.dataBlock * NB_VERTEX_PER_BLOCK);
     indirectCommand.indexOffset = static_cast<uint32_t>(infos.dataBlock * NB_INDEX_PER_BLOCK);
 
-    _vertexAllocator.alloc(vertex.data(), nbBlock, _stagingOffset, infos.dataBlock);
-    _stagingOffset += nbBlock * _vertexAllocator.getBlockSize();
+    auto tryAlloc = [&](Allocator& allocator, void* data, uint32_t blocks, uint32_t& stagingOffset, uint32_t dstOffset) {
+        uint32_t size = blocks * allocator.getBlockSize();
 
-    _indexAllocator.alloc(index.data(), nbBlock, _stagingOffset, infos.dataBlock);
-    _stagingOffset += nbBlock * _indexAllocator.getBlockSize();
+        if (stagingOffset + size > _staging.getSize()) {
+            BufferManager::get().applyCopies();
+            stagingOffset = 0;
+        }
+        allocator.alloc(data, blocks, stagingOffset, dstOffset);
+        stagingOffset += size;
+    };
 
-    _indirectAllocator.alloc(&indirectCommand, 1, _stagingOffset, infos.indirectBlock);
-    _stagingOffset += _indirectAllocator.getBlockSize();
+    tryAlloc(_vertexAllocator, vertex.data(), nbBlock, _stagingOffset, infos.dataBlock);
+    tryAlloc(_indexAllocator, index.data(), nbBlock, _stagingOffset, infos.dataBlock);
+    tryAlloc(_indirectAllocator, &indirectCommand, 1, _stagingOffset, infos.indirectBlock);
 
     return out;
 }

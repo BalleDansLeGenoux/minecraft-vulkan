@@ -118,9 +118,7 @@ void BufferManager::copyBuffer(Buffer& srcBuffer, Buffer& dstBuffer, VkDeviceSiz
 
 void BufferManager::copyBuffer(Buffer& srcBuffer, Buffer& dstBuffer, VkDeviceSize size, VkDeviceSize srcOffset, VkDeviceSize dstOffset) {
     if (size <= 0 || size+dstOffset > dstBuffer.getSize() || size+srcOffset > srcBuffer.getSize()) {
-        BufferManager::get().applyCopies();
-        return;
-        // throw std::runtime_error("BufferManager::copyBuffer() -> GPU buffer overflow !");
+        throw std::runtime_error("BufferManager::copyBuffer() -> GPU buffer overflow !");
     }
     
     pendingCopy.push_back({
