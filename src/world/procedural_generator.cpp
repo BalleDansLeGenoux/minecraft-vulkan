@@ -3,7 +3,7 @@
 #include "core/config.h"
 #include "world/chunk_manager.h"
 
-float PROCEDURAL_OCTAVES = 2;
+int   PROCEDURAL_OCTAVES = 2;
 float PROCEDURAL_FREQUENCY = 0.0054;
 float PROCEDURAL_AMPLITUDE = 128;
 float PROCEDURAL_PERSISTENCE = 0.1;
@@ -14,55 +14,63 @@ ProceduralGenerator::ProceduralGenerator() {
 }
 
 void ProceduralGenerator::generateChunk(glm::vec2 pos) {
-    float value;
-    int height;
+    std::unordered_map<int, Chunk*> local_chunks;
 
-    int heights[CHUNK_SIZE][CHUNK_SIZE];
+    auto getOrCreateChunk = [&](int y_index) -> Chunk* {
+        if (local_chunks.count(y_index)) return local_chunks[y_index];
+        Chunk* c = ChunkManager::get().getChunk({pos.x, y_index, pos.y});
+        if (!c) c = ChunkManager::get().addChunk({pos.x, y_index, pos.y});
+        return local_chunks[y_index] = c;
+    };
 
-    Chunk* chunk;
+    float frequencies[PROCEDURAL_OCTAVES];
+    float amplitudes[PROCEDURAL_OCTAVES];
 
-    for(int x = 0; x < CHUNK_SIZE; x++) {
-        for(int z = 0; z < CHUNK_SIZE; z++) {
-            height = 0;
-            
-            for(int i = 0; i < PROCEDURAL_OCTAVES; i++) {
-                value = perlin_noise.noise_2d(
-                    (pos.x*CHUNK_SIZE+x)*PROCEDURAL_FREQUENCY*std::pow(PROCEDURAL_MULT_FREQUENCY, i),
-                    (pos.y*CHUNK_SIZE+z)*PROCEDURAL_FREQUENCY*std::pow(PROCEDURAL_MULT_FREQUENCY, i)
-                );
-                height += static_cast<int>(value*PROCEDURAL_AMPLITUDE*std::pow(PROCEDURAL_PERSISTENCE, i));
+    for (int i = 0; i < PROCEDURAL_OCTAVES; i++) {
+        frequencies[i] = PROCEDURAL_FREQUENCY * std::pow(PROCEDURAL_MULT_FREQUENCY, i);
+        amplitudes[i] = PROCEDURAL_AMPLITUDE * std::pow(PROCEDURAL_PERSISTENCE, i);
+    }
+
+    for (int x = 0; x < CHUNK_SIZE; x++) {
+        for (int z = 0; z < CHUNK_SIZE; z++) {
+            float total = 0.0f;
+
+            for (int i = 0; i < PROCEDURAL_OCTAVES; i++) {
+                float fx = (pos.x * CHUNK_SIZE + x) * frequencies[i];
+                float fz = (pos.y * CHUNK_SIZE + z) * frequencies[i];
+                total += perlin_noise.noise_2d(fx, fz) * amplitudes[i];
             }
 
-            // height += CHUNK_SIZE;
+            int height = static_cast<int>(total);
+
+            int voxel_start = 0;
+            int voxel_end = 0;
 
             if (height <= 50) {
-                for (int i = 0; i < height-5; i++) {
-                    if ((chunk = ChunkManager::get().getChunk({pos.x, i/CHUNK_SIZE, pos.y})) == nullptr) chunk = ChunkManager::get().addChunk({pos.x, i/CHUNK_SIZE, pos.y});
-                    chunk->addVoxel({x, i%CHUNK_SIZE, z}, 3);
-                }
-    
-                for (int i = height-5; i < height+1; i++) {
-                    if ((chunk = ChunkManager::get().getChunk({pos.x, i/CHUNK_SIZE, pos.y})) == nullptr) chunk = ChunkManager::get().addChunk({pos.x, i/CHUNK_SIZE, pos.y});
-                    chunk->addVoxel({x, i%CHUNK_SIZE, z}, 9);
-                }
-    
-                for (int i = height+1; i < 48; i++) {
-                    if ((chunk = ChunkManager::get().getChunk({pos.x, i/CHUNK_SIZE, pos.y})) == nullptr) chunk = ChunkManager::get().addChunk({pos.x, i/CHUNK_SIZE, pos.y});
-                    chunk->addVoxel({x, i%CHUNK_SIZE, z}, 8);
-                }
+                voxel_end = height - 5;
+                for (int y = voxel_start; y < voxel_end; ++y)
+                    getOrCreateChunk(y / CHUNK_SIZE)->addVoxel({x, y % CHUNK_SIZE, z}, 3); // stone
+
+                voxel_start = voxel_end;
+                voxel_end = height + 1;
+                for (int y = voxel_start; y < voxel_end; ++y)
+                    getOrCreateChunk(y / CHUNK_SIZE)->addVoxel({x, y % CHUNK_SIZE, z}, 9); // dirt
+
+                voxel_start = voxel_end;
+                voxel_end = 48;
+                for (int y = voxel_start; y < voxel_end; ++y)
+                    getOrCreateChunk(y / CHUNK_SIZE)->addVoxel({x, y % CHUNK_SIZE, z}, 8); // water
             } else {
-                for (int i = 0; i < height-2; i++) {
-                    if ((chunk = ChunkManager::get().getChunk({pos.x, i/CHUNK_SIZE, pos.y})) == nullptr) chunk = ChunkManager::get().addChunk({pos.x, i/CHUNK_SIZE, pos.y});
-                    chunk->addVoxel({x, i%CHUNK_SIZE, z}, 3);
-                }
+                voxel_end = height - 2;
+                for (int y = voxel_start; y < voxel_end; ++y)
+                    getOrCreateChunk(y / CHUNK_SIZE)->addVoxel({x, y % CHUNK_SIZE, z}, 3); // stone
 
-                for (int i = height-2; i < height; i++) {
-                    if ((chunk = ChunkManager::get().getChunk({pos.x, i/CHUNK_SIZE, pos.y})) == nullptr) chunk = ChunkManager::get().addChunk({pos.x, i/CHUNK_SIZE, pos.y});
-                    chunk->addVoxel({x, i%CHUNK_SIZE, z}, 2);
-                }
+                voxel_start = voxel_end;
+                voxel_end = height;
+                for (int y = voxel_start; y < voxel_end; ++y)
+                    getOrCreateChunk(y / CHUNK_SIZE)->addVoxel({x, y % CHUNK_SIZE, z}, 2); // dirt
 
-                if ((chunk = ChunkManager::get().getChunk({pos.x, height/CHUNK_SIZE, pos.y})) == nullptr) chunk = ChunkManager::get().addChunk({pos.x, height/CHUNK_SIZE, pos.y});
-                chunk->addVoxel({x, height%CHUNK_SIZE, z}, 1);
+                getOrCreateChunk(height / CHUNK_SIZE)->addVoxel({x, height % CHUNK_SIZE, z}, 1); // grass
             }
         }
     }

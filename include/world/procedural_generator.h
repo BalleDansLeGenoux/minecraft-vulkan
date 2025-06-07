@@ -7,7 +7,7 @@
 #include "world/perlin_noise_2d.h"
 
 
-extern float PROCEDURAL_OCTAVES;
+extern int   PROCEDURAL_OCTAVES;
 extern float PROCEDURAL_FREQUENCY;
 extern float PROCEDURAL_AMPLITUDE;
 extern float PROCEDURAL_PERSISTENCE;

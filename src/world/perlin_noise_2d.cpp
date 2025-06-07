@@ -20,9 +20,6 @@ PerlinNoise2D::PerlinNoise2D() {
 }
 
 float PerlinNoise2D::noise_2d(float x, float y) {
-    // int X = std::floor(x) - std::floor(x/256) * 256;
-    // int Y = std::floor(y) - std::floor(y/256) * 256;
-    
     int X = static_cast<int>(std::floor(x)) & 255;
     int Y = static_cast<int>(std::floor(y)) & 255;
 
